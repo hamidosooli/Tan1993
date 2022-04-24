@@ -27,6 +27,8 @@ else:
 # define colors
 bg_color = pg.Color(255, 255, 255)
 line_color = pg.Color(128, 128, 128)
+vfdh_color = pg.Color(136, 8, 8)
+vfds_color = pg.Color(255, 165, 0)
 
 # define primary positions
 goal_pos_x1 = 3*(WIDTH//Col_num)
@@ -249,36 +251,21 @@ def main():
 # pg.display.set_caption("Hamid Osooli")              # add a caption
 
 
-def animate(trajectory1, trajectory2, action_history1, action_history2, wait_time=0):
+def animate(trajectory1, trajectory2, trajectory3,
+            action_history1, action_history2, action_history3,
+            hunter_vfd, scout_vfd, wait_time=0):
     pg.init()  # initialize pygame
     screen = pg.display.set_mode((WIDTH+2, HEIGHT+2))   # set up the screen
     pg.display.set_caption("Hamid Osooli")              # add a caption
     bg = pg.Surface(screen.get_size())                  # get a background surface
     bg = bg.convert()
-    agent = Agent(screen)
 
-    # img_nat = pg.image.load('nature.png')
-    # img_mdf_nat = pg.transform.scale(img_nat, (WIDTH//Col_num, HEIGHT//Row_num))
-    # img_pud = pg.image.load('puddle.png')
-    # img_mdf_pud = pg.transform.scale(img_pud, (WIDTH//Col_num, HEIGHT//Row_num))
-    # img_dmd = pg.image.load('diamond.png')
-    # img_mdf_dmd = pg.transform.scale(img_dmd, (WIDTH//Col_num, HEIGHT//Row_num))
-    img_quad1 = pg.image.load('quad.png')
-    img_mdf_quad1 = pg.transform.scale(img_quad1, (WIDTH // Col_num, HEIGHT // Row_num))
-    img_home1 = pg.image.load('home.png')
-    img_mdf_home1 = pg.transform.scale(img_home1, (WIDTH // Col_num, HEIGHT // Row_num))
-    img_quad2 = pg.image.load('drone.png')
-    img_mdf_quad2 = pg.transform.scale(img_quad2, (WIDTH // Col_num, HEIGHT // Row_num))
-    img_home2 = pg.image.load('house-icon.png')
-    img_mdf_home2 = pg.transform.scale(img_home2, (WIDTH // Col_num, HEIGHT // Row_num))
-    # img_mnt = pg.image.load('mountain.png')
-    # img_mdf_mnt = pg.transform.scale(img_mnt, (WIDTH // Col_num, HEIGHT // Row_num))
-    # img_ele = pg.image.load('electric-tower.png')
-    # img_mdf_ele = pg.transform.scale(img_ele, (WIDTH // Col_num, HEIGHT // Row_num))
-    # img_flm = pg.image.load('flame.png')
-    # img_mdf_flm = pg.transform.scale(img_flm, (WIDTH // Col_num, HEIGHT // Row_num))
-    # img_vlc = pg.image.load('volcano.png')
-    # img_mdf_vlc = pg.transform.scale(img_vlc, (WIDTH // Col_num, HEIGHT // Row_num))
+    img_hunter_coyote = pg.image.load('hunter_coyote')
+    img_mdf_h_coyote = pg.transform.scale(img_hunter_coyote, (WIDTH // Col_num, HEIGHT // Row_num))
+    img_scout_coyote = pg.image.load('scout_coyote')
+    img_mdf_s_coyote = pg.transform.scale(img_scout_coyote, (WIDTH // Col_num, HEIGHT // Row_num))
+    img_roadrunner = pg.image.load('roadrunner.png')
+    img_mdf_roadrunner = pg.transform.scale(img_roadrunner, (WIDTH // Col_num, HEIGHT // Row_num))
 
     bg.fill(bg_color)
     screen.blit(bg, (0,0))
@@ -291,75 +278,52 @@ def animate(trajectory1, trajectory2, action_history1, action_history2, wait_tim
             if event.type == pg.QUIT:
                 run = False
 
-        for state1, state2, action1, action2 in zip(trajectory1, trajectory2, action_history1, action_history2):
-            # if action == 0 and map_builder()[state] == 6:  # Pick the diamond
-            #     agent.BOX_IS_FULL = True
+        for state1, state2, state3, action1, action2, action3 in zip(trajectory1, trajectory2, trajectory3,
+                                                                     action_history1, action_history2, action_history3):
+            # hunter visual field depth
+            for j in range(int(max(state1[1]-hunter_vfd, 0)), int(min(Row_num, state1[1]+hunter_vfd+1))):
+                for i in range(int(max(state1[0]-hunter_vfd, 0)), int(min(Col_num, state1[0]+hunter_vfd+1))):
+                    rect = pg.Rect(j * (WIDTH // Col_num), i * (HEIGHT // Row_num),
+                                   (WIDTH // Col_num), (HEIGHT // Row_num))
+                    pg.draw.rect(screen, vfdh_color, rect)
 
-            # mountains and tree_line
-            # for j in range(int(np.floor(Row_num/2))-1):
-            #     for i in range(int(np.floor(Col_num/2))-1):
-            #         if i == j:
-            #             screen.blit(img_mdf_nat,
-            #                         (mount_pos_x - i * (WIDTH // Col_num), mount_pos_y + i * (HEIGHT // Row_num)))
-            #         else:
-            #             screen.blit(img_mdf_mnt,
-            #                         (mount_pos_x - j*(WIDTH // Col_num), mount_pos_y + i*(HEIGHT // Row_num)))
+            # scout visual field depth
+            for j in range(int(max(state2[1]-scout_vfd, 0)), int(min(Col_num, state2[1]+scout_vfd+1))):
+                for i in range(int(max(state2[0]-scout_vfd, 0)), int(min(Col_num, state2[0]+scout_vfd+1))):
+                    rect = pg.Rect(j * (WIDTH // Col_num), i * (HEIGHT // Row_num),
+                                   (WIDTH // Col_num), (HEIGHT // Row_num))
+                    pg.draw.rect(screen, vfds_color, rect)
 
-            # # trees
-            # for j in range(int(np.floor(Row_num / 4)) - 1):
-            #     for i in range(int(np.floor(Col_num / 4)) - 1):
-            #         if BIG_ENV:
-            #             if i == 2 * j + 2 or i == 2 * j - 2 or i == 2 * j + 5 or i == 2 * j - 5:
-            #                 screen.blit(img_mdf_vlc,
-            #                             (tree_pos_x - j * (WIDTH // Col_num), tree_pos_y + i * (HEIGHT // Row_num)))
-            #             else:
-            #                 screen.blit(img_mdf_nat,
-            #                             (tree_pos_x - j * (WIDTH // Col_num), tree_pos_y + i * (HEIGHT // Row_num)))
-            #         else:
-            #             screen.blit(img_mdf_nat,
-            #                             (tree_pos_x - j * (WIDTH // Col_num), tree_pos_y + i * (HEIGHT // Row_num)))
-            # # Electricity lines
-            # for k in range(Col_num):
-            #     screen.blit(img_mdf_ele, (k * eleline_pos_x, k * eleline_pos_y))
+            # agents
+            screen.blit(img_mdf_h_coyote, (state1[1] * (WIDTH // Col_num), state1[0] * (HEIGHT // Row_num)))
+            screen.blit(img_mdf_s_coyote, (state2[1] * (WIDTH // Col_num), state2[0] * (HEIGHT // Row_num)))
+            screen.blit(img_mdf_roadrunner, (state3[1] * (WIDTH // Col_num), state3[0] * (HEIGHT // Row_num)))
 
-            # # puddle
-            # for j in range(int(np.floor(Row_num / 4)) - 1):
-            #     for i in range(int(np.floor(Col_num / 4)) - 1):
-            #         if BIG_ENV:
-            #             if i == j and not agent.BOX_IS_FULL:
-            #                 screen.blit(img_mdf_dmd,
-            #                             ((5 + j) * (WIDTH // Col_num), (Row_num - 5 - i) * (HEIGHT // Row_num)))
-            #             elif i == 2 * j + 1 or i == 2 * j - 1:
-            #                 screen.blit(img_mdf_flm,
-            #                             ((5 + j) * (WIDTH // Col_num), (Row_num - 5 - i) * (HEIGHT // Row_num)))
-            #             else:
-            #                 screen.blit(img_mdf_pud,
-            #                             ((5 + j) * (WIDTH // Col_num), (Row_num - 5 - i) * (HEIGHT // Row_num)))
-            #         else:
-            #             if i == j and not agent.BOX_IS_FULL:
-            #                 screen.blit(img_mdf_dmd,
-            #                             ((5 + j) * (WIDTH // Col_num), (Row_num - 5 - i) * (HEIGHT // Row_num)))
-            #             else:
-            #                 screen.blit(img_mdf_pud,
-            #                             ((5 + j) * (WIDTH // Col_num), (Row_num - 5 - i) * (HEIGHT // Row_num)))
-
-            # goal
-            screen.blit(img_mdf_home1, (goal_pos_x1, goal_pos_y1))
-            screen.blit(img_mdf_home2, (goal_pos_x2, goal_pos_y2))
-
-            # agent
-            screen.blit(img_mdf_quad1, (state1[1] * (WIDTH // Col_num), state1[0] * (HEIGHT // Row_num)))
-            screen.blit(img_mdf_quad2, (state2[1] * (WIDTH // Col_num), state2[0] * (HEIGHT // Row_num)))
             draw_grid(screen)
             pg.display.flip()
             pg.display.update()
             time.sleep(wait_time)  # wait between the shows
             screen.blit(bg, (state1[1] * (WIDTH // Col_num), state1[0] * (HEIGHT // Row_num)))
             screen.blit(bg, (state2[1] * (WIDTH // Col_num), state2[0] * (HEIGHT // Row_num)))
-        screen.blit(img_mdf_home1, (goal_pos_x1, goal_pos_y1))
-        screen.blit(img_mdf_home2, (goal_pos_x2, goal_pos_y2))
-        screen.blit(img_mdf_quad1, (trajectory1[-1][1] * (WIDTH // Col_num), trajectory1[-1][0] * (HEIGHT // Row_num)))
-        screen.blit(img_mdf_quad2, (trajectory2[-1][1] * (WIDTH // Col_num), trajectory2[-1][0] * (HEIGHT // Row_num)))
+            screen.blit(bg, (state3[1] * (WIDTH // Col_num), state3[0] * (HEIGHT // Row_num)))
+
+            # hunter visual field depths
+            for j in range(int(max(state1[1]-hunter_vfd, 0)), int(min(Row_num, state1[1]+hunter_vfd+1))):
+                for i in range(int(max(state1[0]-hunter_vfd, 0)), int(min(Col_num, state1[0]+hunter_vfd+1))):
+                    rect = pg.Rect(j * (WIDTH // Col_num), i * (HEIGHT // Row_num),
+                                       (WIDTH // Col_num), (HEIGHT // Row_num))
+                    pg.draw.rect(screen, bg_color, rect)
+
+            # scout visual field depth
+            for j in range(int(max(state2[1]-scout_vfd, 0)), int(min(Row_num, state2[1]+scout_vfd+1))):
+                for i in range(int(max(state2[0]-scout_vfd, 0)), int(min(Col_num, state2[0]+scout_vfd+1))):
+                    rect = pg.Rect(j * (WIDTH // Col_num), i * (HEIGHT // Row_num),
+                                   (WIDTH // Col_num), (HEIGHT // Row_num))
+                    pg.draw.rect(screen, bg_color, rect)
+
+        screen.blit(img_mdf_h_coyote, (trajectory1[-1][1] * (WIDTH // Col_num), trajectory1[-1][0] * (HEIGHT // Row_num)))
+        screen.blit(img_mdf_s_coyote, (trajectory2[-1][1] * (WIDTH // Col_num), trajectory2[-1][0] * (HEIGHT // Row_num)))
+        screen.blit(img_mdf_roadrunner, (trajectory3[-1][1] * (WIDTH // Col_num), trajectory3[-1][0] * (HEIGHT // Row_num)))
         draw_grid(screen)
         pg.display.flip()
         pg.display.update()
