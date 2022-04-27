@@ -27,7 +27,7 @@ else:
 # define colors
 bg_color = pg.Color(255, 255, 255)
 line_color = pg.Color(128, 128, 128)
-vfdh_color = pg.Color(136, 8, 8)
+vfdh_color = pg.Color(8, 136, 8)
 vfds_color = pg.Color(255, 165, 0)
 
 # define primary positions
@@ -260,11 +260,11 @@ def animate(trajectory1, trajectory2, trajectory3,
     bg = pg.Surface(screen.get_size())                  # get a background surface
     bg = bg.convert()
 
-    img_hunter_coyote = pg.image.load('hunter_coyote')
+    img_hunter_coyote = pg.image.load('TurtleBot.png')
     img_mdf_h_coyote = pg.transform.scale(img_hunter_coyote, (WIDTH // Col_num, HEIGHT // Row_num))
-    img_scout_coyote = pg.image.load('scout_coyote')
+    img_scout_coyote = pg.image.load('Crazyflie.JPG')
     img_mdf_s_coyote = pg.transform.scale(img_scout_coyote, (WIDTH // Col_num, HEIGHT // Row_num))
-    img_roadrunner = pg.image.load('roadrunner.png')
+    img_roadrunner = pg.image.load('victim.png')
     img_mdf_roadrunner = pg.transform.scale(img_roadrunner, (WIDTH // Col_num, HEIGHT // Row_num))
 
     bg.fill(bg_color)
