@@ -1,10 +1,10 @@
 import numpy as np
 import h5py
 
-NUM_EPISODES = 10000
+NUM_EPISODES = 1000000
 Hunter_VFD = 2  # Hunter's visual field depth
 Scout_VFD = 4  # Scout's visual field depth
-
+max_step = 1000
 # Actions
 FORWARD = 0
 BACKWARD = 1
@@ -72,9 +72,9 @@ def rl_agent(beta=0.8):
     rewards = []
 
     for eps in range(NUM_EPISODES):
-        hunter_pose = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
-        scout_pose = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
-        prey_pose = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
+        hunter_pos = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
+        scout_pos = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
+        prey_pos = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
 
         T_hunter = []
         T_scout = []
@@ -90,24 +90,25 @@ def rl_agent(beta=0.8):
         while True:
             t_step += 1
 
-            T_hunter.append(hunter_pose)
-            T_scout.append(scout_pose)
-            T_prey.append(prey_pose)
+            T_hunter.append(hunter_pos)
+            T_scout.append(scout_pos)
+            T_prey.append(prey_pos)
 
-            hunter_sensation = np.subtract(prey_pose, hunter_pose)
+            hunter_sensation = np.subtract(prey_pos, hunter_pos)
 
-            hunter_probs = Boltzmann(Q[hunter_sensation[0], hunter_sensation[1], :])
+            hunter_probs = Boltzmann(Q[row_lim-hunter_sensation[0], column_lim-hunter_sensation[1], :])
             hunter_action = np.random.choice(ACTIONS, p=hunter_probs)
             scout_action = np.random.choice(ACTIONS)
             prey_action = np.random.choice(ACTIONS)
 
-            hunter_pose_prime = movement(hunter_pose, hunter_action)
-            scout_pose_prime = movement(scout_pose, scout_action)
-            prey_pose_prime = movement(prey_pose, prey_action)
+            hunter_pos_prime = movement(hunter_pos, hunter_action)
+            scout_pos_prime = movement(scout_pos, scout_action)
+            prey_pos_prime = movement(prey_pos, prey_action)
 
-            scout2hunter = np.subtract(scout_pose_prime, hunter_pose_prime)
-            scout_sensation = np.subtract(prey_pose_prime, scout_pose_prime)
-            hunter_sensation_prime_step1 = np.subtract(prey_pose_prime, hunter_pose_prime)
+            scout2hunter = np.subtract(scout_pos_prime, hunter_pos_prime)
+            scout_sensation = np.subtract(prey_pos_prime, scout_pos_prime)
+
+            hunter_sensation_prime_step1 = np.subtract(prey_pos_prime, hunter_pos_prime)
             hunter_sensation_prime = transition(hunter_sensation_prime_step1, scout_sensation, scout2hunter)
 
             re = reward(hunter_sensation_prime)
@@ -117,19 +118,20 @@ def rl_agent(beta=0.8):
             A_prey.append(prey_action)
 
             R.append(re)
-
             Q[row_lim-hunter_sensation[0],
-              row_lim-hunter_sensation[1], hunter_action] += beta * (re +
+              column_lim-hunter_sensation[1], hunter_action] += beta * (re +
                                                  gamma * np.max(Q[row_lim-hunter_sensation_prime[0],
-                                                                  row_lim-hunter_sensation_prime[1], :]) -
+                                                                  column_lim-hunter_sensation_prime[1], :]) -
                                                  Q[row_lim-hunter_sensation[0],
-                                                   row_lim-hunter_sensation[1], hunter_action])
+                                                   column_lim-hunter_sensation[1], hunter_action])
+            hunter_pos = hunter_pos_prime
+            scout_pos = scout_pos_prime
+            prey_pos = prey_pos_prime
 
-            hunter_pose = hunter_pose_prime
-            scout_pose = scout_pose_prime
-            prey_pose = prey_pose_prime
             if hunter_sensation_prime == [0, 0]:
-                # Q[hunter_sensation_prime[0], hunter_sensation_prime[1], :] = 0
+                T_hunter.append(hunter_pos)
+                T_scout.append(scout_pos)
+                T_prey.append(prey_pos)
                 steps.append(t_step)
                 rewards.append(sum(R))
                 print(f'In episode {eps + 1} of {NUM_EPISODES}, the prey was captured in {t_step + 1} steps')
