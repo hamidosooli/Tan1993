@@ -2,8 +2,8 @@ import numpy as np
 import h5py
 
 NUM_EPISODES = 1000000
-Hunter_VFD = 2  # Hunter's visual field depth
-Scout_VFD = 4  # Scout's visual field depth
+Hunter_VFD = 1  # Hunter's visual field depth
+Scout_VFD = 2  # Scout's visual field depth
 max_step = 1000
 # Actions
 FORWARD = 0
@@ -17,6 +17,7 @@ Row_num = 10
 Col_num = 10
 row_lim = 9
 column_lim = 9
+
 
 def Boltzmann(q, t=0.4):
     return np.exp(q / t) / np.sum(np.exp(q / t))
