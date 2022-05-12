@@ -8,7 +8,6 @@ LEFT = 3
 ACTIONS = [FORWARD, BACKWARD, RIGHT, LEFT]
 
 
-
 class Agent:
     def __init__(self, agent_type, obs_size, pos):
         self.agent_type = agent_type

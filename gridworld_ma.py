@@ -295,6 +295,7 @@ def animate(trajectory1, trajectory2, trajectory3,
                     pg.draw.rect(screen, vfds_color, rect)
 
             # agents
+            # print(f'hunter is in {state1}, scout is in {state2}, prey is in {state3}')
             screen.blit(img_mdf_h_coyote, (state1[1] * (WIDTH // Col_num), state1[0] * (HEIGHT // Row_num)))
             screen.blit(img_mdf_s_coyote, (state2[1] * (WIDTH // Col_num), state2[0] * (HEIGHT // Row_num)))
             screen.blit(img_mdf_roadrunner, (state3[1] * (WIDTH // Col_num), state3[0] * (HEIGHT // Row_num)))

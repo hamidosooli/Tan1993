@@ -1,7 +1,7 @@
 import numpy as np
 import h5py
 
-NUM_EPISODES = 1000000
+NUM_EPISODES = 500
 Hunter_VFD = 1  # Hunter's visual field depth
 Scout_VFD = 2  # Scout's visual field depth
 max_step = 1000
@@ -95,7 +95,10 @@ def rl_agent(beta=0.8):
             T_scout.append(scout_pos)
             T_prey.append(prey_pos)
 
-            hunter_sensation = np.subtract(prey_pos, hunter_pos)
+            scout2hunter = np.subtract(scout_pos, hunter_pos)
+            scout_sensation = np.subtract(prey_pos, scout_pos)
+            hunter_sensation_step1 = np.subtract(prey_pos, hunter_pos)
+            hunter_sensation = transition(hunter_sensation_step1, scout_sensation, scout2hunter)
 
             hunter_probs = Boltzmann(Q[row_lim-hunter_sensation[0], column_lim-hunter_sensation[1], :])
             hunter_action = np.random.choice(ACTIONS, p=hunter_probs)
@@ -106,11 +109,10 @@ def rl_agent(beta=0.8):
             scout_pos_prime = movement(scout_pos, scout_action)
             prey_pos_prime = movement(prey_pos, prey_action)
 
-            scout2hunter = np.subtract(scout_pos_prime, hunter_pos_prime)
-            scout_sensation = np.subtract(prey_pos_prime, scout_pos_prime)
-
+            scout2hunter_prime = np.subtract(scout_pos_prime, hunter_pos_prime)
+            scout_sensation_prime = np.subtract(prey_pos_prime, scout_pos_prime)
             hunter_sensation_prime_step1 = np.subtract(prey_pos_prime, hunter_pos_prime)
-            hunter_sensation_prime = transition(hunter_sensation_prime_step1, scout_sensation, scout2hunter)
+            hunter_sensation_prime = transition(hunter_sensation_prime_step1, scout_sensation_prime, scout2hunter_prime)
 
             re = reward(hunter_sensation_prime)
 
