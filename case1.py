@@ -93,7 +93,7 @@ def reward(hunter_sensation_prime):
 
 def rl_agent(beta=0.8):
     global default_sensation
-    Q = np.zeros((2*Row_num-1, 2*Col_num-1, nA))
+    Q = np.zeros((2*Row_num+1, 2*Col_num+1, nA))
 
     steps = []
     rewards = []
@@ -131,7 +131,7 @@ def rl_agent(beta=0.8):
             hunter_sensation_step1 = np.subtract(prey_pos, hunter_pos)
             hunter_sensation = transition(hunter_sensation_step1, scout_sensation, scout2hunter)
 
-            hunter_probs = Boltzmann(Q[row_lim-hunter_sensation[0], column_lim-hunter_sensation[1], :])
+            hunter_probs = Boltzmann(Q[Row_num+hunter_sensation[0], Col_num+hunter_sensation[1], :])
             hunter_action = np.random.choice(ACTIONS, p=hunter_probs)
             scout_action = np.random.choice(ACTIONS)
             prey_action = np.random.choice(ACTIONS)
@@ -156,12 +156,12 @@ def rl_agent(beta=0.8):
                 counter += 1
             if counter == 1:
                 s = t_step
-            Q[row_lim-hunter_sensation[0],
-              column_lim-hunter_sensation[1], hunter_action] += beta * (re +
-                                                 gamma * np.max(Q[row_lim-hunter_sensation_prime[0],
-                                                                  column_lim-hunter_sensation_prime[1], :]) -
-                                                 Q[row_lim-hunter_sensation[0],
-                                                   column_lim-hunter_sensation[1], hunter_action])
+            Q[Row_num+hunter_sensation[0],
+              Col_num+hunter_sensation[1], hunter_action] += beta * (re +
+                                                 gamma * np.max(Q[Row_num+hunter_sensation_prime[0],
+                                                                  Col_num+hunter_sensation_prime[1], :]) -
+                                                 Q[Row_num+hunter_sensation[0],
+                                                   Col_num+hunter_sensation[1], hunter_action])
             hunter_pos = hunter_pos_prime
             scout_pos = scout_pos_prime
             prey_pos = prey_pos_prime
@@ -179,32 +179,32 @@ def rl_agent(beta=0.8):
     return T_hunter, T_scout, T_prey, A_hunter, A_scout, A_prey, rewards, steps, see_rewards, see_steps, Q
 
 
-T_hunter_runs = []
-T_scout_runs = []
-T_prey_runs = []
-A_hunter_runs = []
-A_scout_runs = []
-A_prey_runs = []
-rewards_runs = []
-steps_runs = []
-see_rewards_runs = []
-see_steps_runs = []
-Q_runs = []
-for run in range(NUM_RUNS):
-    print(bcolors.WARNING + 'Run ' + str(run + 1) + ' of ' + str(NUM_RUNS) + bcolors.ENDC)
-    T_hunter, T_scout, T_prey, A_hunter, A_scout, A_prey, rewards, steps, see_rewards, see_steps, Q = rl_agent(beta=0.8)
+# T_hunter_runs = []
+# T_scout_runs = []
+# T_prey_runs = []
+# A_hunter_runs = []
+# A_scout_runs = []
+# A_prey_runs = []
+# rewards_runs = []
+# steps_runs = []
+# see_rewards_runs = []
+# see_steps_runs = []
+# Q_runs = []
+# for run in range(NUM_RUNS):
+#     print(bcolors.WARNING + 'Run ' + str(run + 1) + ' of ' + str(NUM_RUNS) + bcolors.ENDC)
+T_hunter, T_scout, T_prey, A_hunter, A_scout, A_prey, rewards, steps, see_rewards, see_steps, Q = rl_agent(beta=0.8)
 
-    T_hunter_runs.append(T_hunter)
-    T_scout_runs.append(T_scout)
-    T_prey_runs.append(T_prey)
-    A_hunter_runs.append(A_hunter)
-    A_scout_runs.append(A_scout)
-    A_prey_runs.append(A_prey)
-    rewards_runs.append(rewards)
-    steps_runs.append(steps)
-    see_rewards_runs.append(see_rewards)
-    see_steps_runs.append(see_steps)
-    Q_runs.append(Q)
+    # T_hunter_runs.append(T_hunter)
+    # T_scout_runs.append(T_scout)
+    # T_prey_runs.append(T_prey)
+    # A_hunter_runs.append(A_hunter)
+    # A_scout_runs.append(A_scout)
+    # A_prey_runs.append(A_prey)
+    # rewards_runs.append(rewards)
+    # steps_runs.append(steps)
+    # see_rewards_runs.append(see_rewards)
+    # see_steps_runs.append(see_steps)
+    # Q_runs.append(Q)
 
 
 # T_hunter_runs = np.asarray(T_hunter_runs)
@@ -213,26 +213,26 @@ for run in range(NUM_RUNS):
 # A_hunter_runs = np.asarray(A_hunter_runs)
 # A_scout_runs = np.asarray(A_scout_runs)
 # A_prey_runs = np.asarray(A_prey_runs)
-rewards_runs = np.asarray(rewards_runs)
-steps_runs = np.asarray(steps_runs)
-see_rewards_runs = np.asarray(see_rewards_runs)
-see_steps_runs = np.asarray(see_steps_runs)
+# rewards_runs = np.asarray(rewards_runs)
+# steps_runs = np.asarray(steps_runs)
+# see_rewards_runs = np.asarray(see_rewards_runs)
+# see_steps_runs = np.asarray(see_steps_runs)
 # Q_runs = np.asarray(Q_runs)
 
 
 with h5py.File(f'Tan1993_case1_runs_exp1.hdf5', "w") as f:
 
-    # f.create_dataset('T_hunter', data=T_hunter_runs)
-    # f.create_dataset('T_scout', data=T_scout_runs)
-    # f.create_dataset('T_prey', data=T_prey_runs)
-    #
-    # f.create_dataset('A_hunter', data=A_hunter_runs)
-    # f.create_dataset('A_scout', data=A_scout_runs)
-    # f.create_dataset('A_prey', data=A_prey_runs)
+    f.create_dataset('T_hunter', data=T_hunter)
+    f.create_dataset('T_scout', data=T_scout)
+    f.create_dataset('T_prey', data=T_prey)
 
-    f.create_dataset('rewards', data=rewards_runs)
-    f.create_dataset('steps', data=steps_runs)
-    f.create_dataset('see_rewards', data=see_rewards_runs)
-    f.create_dataset('see_steps', data=see_steps_runs)
+    f.create_dataset('A_hunter', data=A_hunter)
+    f.create_dataset('A_scout', data=A_scout)
+    f.create_dataset('A_prey', data=A_prey)
 
-    # f.create_dataset('Q', data=Q_runs)
+    f.create_dataset('rewards', data=rewards)
+    f.create_dataset('steps', data=steps)
+    f.create_dataset('see_rewards', data=see_rewards)
+    f.create_dataset('see_steps', data=see_steps)
+
+    f.create_dataset('Q', data=Q)

@@ -2,7 +2,7 @@ import numpy as np
 import h5py
 
 NUM_EPISODES = 500
-Hunter_VFD = 1  # Hunter's visual field depth
+Hunter_VFD = 2  # Hunter's visual field depth
 Scout_VFD = 2  # Scout's visual field depth
 max_step = 1000
 # Actions
@@ -10,7 +10,11 @@ FORWARD = 0
 BACKWARD = 1
 RIGHT = 2
 LEFT = 3
-ACTIONS = [FORWARD, BACKWARD, RIGHT, LEFT]
+NORTHEAST = 4
+NORTHWEST = 5
+SOUTHEAST = 6
+SOUTHWEST = 7
+ACTIONS = [FORWARD, BACKWARD, RIGHT, LEFT, NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWEST]
 nA = len(ACTIONS)
 gamma = .9
 Row_num = 10
@@ -18,7 +22,7 @@ Col_num = 10
 row_lim = 9
 column_lim = 9
 
-default_sensation = [row_lim, column_lim]
+default_sensation = [Hunter_VFD, Hunter_VFD]
 
 
 def Boltzmann(q, t=0.4):
@@ -37,6 +41,14 @@ def movement(position, action):
         next_position = [row, min(column + 1, column_lim)]
     elif action == 3:  # left
         next_position = [row, max(column - 1, 0)]
+    elif action == 4:  # northeast
+        next_position = [max(row - 1, 0), min(column + 1, column_lim)]
+    elif action == 5:  # northwest
+        next_position = [max(row - 1, 0), max(column - 1, 0)]
+    elif action == 6:  # southeast
+        next_position = [min(row + 1, row_lim), min(column + 1, column_lim)]
+    elif action == 7:  # southwest
+        next_position = [min(row + 1, row_lim), max(column - 1, 0)]
 
     return next_position
 
@@ -67,9 +79,17 @@ def reward(hunter_sensation_prime):
     return re
 
 
+def sensation2index(sensation, VFD):
+    if abs(sensation[0]) <= VFD and abs(sensation[1]) <= VFD:
+        index = (sensation[0]+VFD) * (2*VFD) + (sensation[1]+VFD)
+    else:
+        index = (2*Hunter_VFD+1)**2
+    return index
+
+
 def rl_agent(beta=0.8):
     global default_sensation
-    Q = np.zeros((2*Row_num-1, 2*Col_num-1, nA))
+    Q = np.zeros(((2*Hunter_VFD+1)**2 + 1, nA))
 
     steps = []
     rewards = []
@@ -94,7 +114,7 @@ def rl_agent(beta=0.8):
 
         counter = 0
         t_step = 0
-        default_sensation = [row_lim, column_lim]
+        default_sensation = [Hunter_VFD, Hunter_VFD]
         while True:
             t_step += 1
 
@@ -106,8 +126,8 @@ def rl_agent(beta=0.8):
             # scout_sensation = np.subtract(prey_pos, scout_pos)
             hunter_sensation_step1 = np.subtract(prey_pos, hunter_pos)
             hunter_sensation = transition(hunter_sensation_step1)  # , scout_sensation, scout2hunter)
-
-            hunter_probs = Boltzmann(Q[row_lim-hunter_sensation[0], column_lim-hunter_sensation[1], :])
+            idx = sensation2index(hunter_sensation, Hunter_VFD)
+            hunter_probs = Boltzmann(Q[idx, :])
             hunter_action = np.random.choice(ACTIONS, p=hunter_probs)
             # scout_action = np.random.choice(ACTIONS)
             prey_action = np.random.choice(ACTIONS)
@@ -127,17 +147,13 @@ def rl_agent(beta=0.8):
             # A_scout.append(scout_action)
             A_prey.append(prey_action)
             R.append(re)
-            if default_sensation != [row_lim, column_lim]:
+            if default_sensation != [Hunter_VFD, Hunter_VFD]:
                 R_prime.append(re)
                 counter += 1
             if counter == 1:
                 s = t_step
-            Q[row_lim-hunter_sensation[0],
-              column_lim-hunter_sensation[1], hunter_action] += beta * (re +
-                                                 gamma * np.max(Q[row_lim-hunter_sensation_prime[0],
-                                                                  column_lim-hunter_sensation_prime[1], :]) -
-                                                 Q[row_lim-hunter_sensation[0],
-                                                   column_lim-hunter_sensation[1], hunter_action])
+            idx_prime = sensation2index(hunter_sensation_prime, Hunter_VFD)
+            Q[idx, hunter_action] += beta * (re + gamma * np.max(Q[idx_prime, :]) - Q[idx, hunter_action])
             hunter_pos = hunter_pos_prime
             # scout_pos = scout_pos_prime
             prey_pos = prey_pos_prime
