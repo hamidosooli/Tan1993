@@ -14,7 +14,7 @@ NORTHEAST = 4
 NORTHWEST = 5
 SOUTHEAST = 6
 SOUTHWEST = 7
-ACTIONS = [FORWARD, BACKWARD, RIGHT, LEFT, NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWEST]
+ACTIONS = [FORWARD, BACKWARD, RIGHT, LEFT]  # , NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWEST]
 nA = len(ACTIONS)
 gamma = .9
 Row_num = 10
@@ -41,14 +41,14 @@ def movement(position, action):
         next_position = [row, min(column + 1, column_lim)]
     elif action == 3:  # left
         next_position = [row, max(column - 1, 0)]
-    elif action == 4:  # northeast
-        next_position = [max(row - 1, 0), min(column + 1, column_lim)]
-    elif action == 5:  # northwest
-        next_position = [max(row - 1, 0), max(column - 1, 0)]
-    elif action == 6:  # southeast
-        next_position = [min(row + 1, row_lim), min(column + 1, column_lim)]
-    elif action == 7:  # southwest
-        next_position = [min(row + 1, row_lim), max(column - 1, 0)]
+    # elif action == 4:  # northeast
+    #     next_position = [max(row - 1, 0), min(column + 1, column_lim)]
+    # elif action == 5:  # northwest
+    #     next_position = [max(row - 1, 0), max(column - 1, 0)]
+    # elif action == 6:  # southeast
+    #     next_position = [min(row + 1, row_lim), min(column + 1, column_lim)]
+    # elif action == 7:  # southwest
+    #     next_position = [min(row + 1, row_lim), max(column - 1, 0)]
 
     return next_position
 
@@ -81,7 +81,7 @@ def reward(hunter_sensation_prime):
 
 def sensation2index(sensation, VFD):
     if abs(sensation[0]) <= VFD and abs(sensation[1]) <= VFD:
-        index = (sensation[0]+VFD) * (2*VFD) + (sensation[1]+VFD)
+        index = (sensation[0]+VFD) * (2*VFD+1) + (sensation[1]+VFD)
     else:
         index = (2*Hunter_VFD+1)**2
     return index
@@ -97,9 +97,9 @@ def rl_agent(beta=0.8):
     see_rewards = []
 
     for eps in range(NUM_EPISODES):
-        hunter_pos = [9, 0]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
+        hunter_pos = [0, 9]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
         scout_pos = [9, 9]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
-        prey_pos = [5, 5]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
+        prey_pos = [9, 0]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
 
         T_hunter = []
         T_scout = []
@@ -114,6 +114,7 @@ def rl_agent(beta=0.8):
 
         counter = 0
         t_step = 0
+        s = 0
         default_sensation = [Hunter_VFD, Hunter_VFD]
         while True:
             t_step += 1
@@ -134,11 +135,11 @@ def rl_agent(beta=0.8):
 
             hunter_pos_prime = movement(hunter_pos, hunter_action)
             # scout_pos_prime = movement(scout_pos, scout_action)
-            prey_pos_prime = prey_pos#movement(prey_pos, prey_action)
+            # prey_pos_prime = prey_pos#movement(prey_pos, prey_action)
 
             # scout2hunter_prime = np.subtract(scout_pos_prime, hunter_pos_prime)
             # scout_sensation_prime = np.subtract(prey_pos_prime, scout_pos_prime)
-            hunter_sensation_prime_step1 = np.subtract(prey_pos_prime, hunter_pos_prime)
+            hunter_sensation_prime_step1 = np.subtract(prey_pos, hunter_pos_prime)
             hunter_sensation_prime = transition(hunter_sensation_prime_step1)  # , scout_sensation_prime, scout2hunter_prime)
 
             re = reward(hunter_sensation_prime)
@@ -151,12 +152,14 @@ def rl_agent(beta=0.8):
                 R_prime.append(re)
                 counter += 1
             if counter == 1:
-                s = t_step
+                s += 1
             idx_prime = sensation2index(hunter_sensation_prime, Hunter_VFD)
             Q[idx, hunter_action] += beta * (re + gamma * np.max(Q[idx_prime, :]) - Q[idx, hunter_action])
             hunter_pos = hunter_pos_prime
             # scout_pos = scout_pos_prime
-            prey_pos = prey_pos_prime
+            prey_pos = movement(prey_pos, prey_action)
+            if eps>490:
+                print(Q[10:20, :])
             if hunter_sensation_prime == [0, 0]:
                 T_hunter.append(hunter_pos)
                 T_scout.append(scout_pos)
@@ -165,7 +168,7 @@ def rl_agent(beta=0.8):
                 see_steps.append(s)
                 rewards.append(sum(R))
                 see_rewards.append(sum(R_prime))
-                print(f'In episode {eps + 1} of {NUM_EPISODES}, the prey was captured in {t_step + 1} steps')
+                # print(f'In episode {eps + 1} of {NUM_EPISODES}, the prey was captured in {t_step + 1} steps')
                 break
 
     return T_hunter, T_scout, T_prey, A_hunter, A_scout, A_prey, rewards, steps, see_rewards, see_steps, Q
