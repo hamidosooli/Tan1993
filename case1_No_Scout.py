@@ -135,7 +135,7 @@ def rl_agent(beta=0.8):
 
             hunter_pos_prime = movement(hunter_pos, hunter_action)
             # scout_pos_prime = movement(scout_pos, scout_action)
-            # prey_pos_prime = prey_pos#movement(prey_pos, prey_action)
+            prey_pos_prime = movement(prey_pos, prey_action)
 
             # scout2hunter_prime = np.subtract(scout_pos_prime, hunter_pos_prime)
             # scout_sensation_prime = np.subtract(prey_pos_prime, scout_pos_prime)
@@ -151,16 +151,18 @@ def rl_agent(beta=0.8):
             if default_sensation != [Hunter_VFD, Hunter_VFD]:
                 R_prime.append(re)
                 counter += 1
-            if counter == 1:
+            if counter >= 1:
                 s += 1
             idx_prime = sensation2index(hunter_sensation_prime, Hunter_VFD)
             Q[idx, hunter_action] += beta * (re + gamma * np.max(Q[idx_prime, :]) - Q[idx, hunter_action])
-            hunter_pos = hunter_pos_prime
+
             # scout_pos = scout_pos_prime
-            prey_pos = movement(prey_pos, prey_action)
-            if eps>490:
-                print(Q[10:20, :])
-            if hunter_sensation_prime == [0, 0]:
+            # if hunter_sensation_prime != [0, 0]:
+
+            # if eps>490:
+            #     print(Q[10:20, :])if hunter_sensation_prime == [0, 0]:
+
+            if hunter_sensation_prime[0] == 0 and hunter_sensation_prime[1] == 0:
                 T_hunter.append(hunter_pos)
                 T_scout.append(scout_pos)
                 T_prey.append(prey_pos)
@@ -168,9 +170,10 @@ def rl_agent(beta=0.8):
                 see_steps.append(s)
                 rewards.append(sum(R))
                 see_rewards.append(sum(R_prime))
-                # print(f'In episode {eps + 1} of {NUM_EPISODES}, the prey was captured in {t_step + 1} steps')
+                print(f'In episode {eps + 1} of {NUM_EPISODES}, the prey was captured in {t_step + 1} steps')
                 break
-
+            hunter_pos = hunter_pos_prime
+            prey_pos = prey_pos_prime
     return T_hunter, T_scout, T_prey, A_hunter, A_scout, A_prey, rewards, steps, see_rewards, see_steps, Q
 
 
