@@ -97,9 +97,9 @@ def rl_agent(beta=0.8):
     see_rewards = []
 
     for eps in range(NUM_EPISODES):
-        hunter_pos = [0, 9]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
-        scout_pos = [9, 9]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
-        prey_pos = [9, 0]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
+        hunter_pos = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
+        scout_pos = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
+        prey_pos = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
 
         T_hunter = []
         T_scout = []
@@ -142,8 +142,8 @@ def rl_agent(beta=0.8):
             hunter_sensation_prime_step1 = np.subtract(prey_pos, hunter_pos_prime)
             hunter_sensation_prime = transition(hunter_sensation_prime_step1)  # , scout_sensation_prime, scout2hunter_prime)
 
-            re = reward(hunter_sensation_prime)
-
+            re = reward(hunter_sensation)
+            print(re)
             A_hunter.append(hunter_action)
             # A_scout.append(scout_action)
             A_prey.append(prey_action)
@@ -163,7 +163,7 @@ def rl_agent(beta=0.8):
             #     print(Q[10:20, :])if hunter_sensation_prime == [0, 0]:
             hunter_pos = hunter_pos_prime
             prey_pos = prey_pos_prime
-            if hunter_sensation[0] == 0 and hunter_sensation[1] == 0:
+            if hunter_sensation == [0, 0]:
                 # T_hunter.append(hunter_pos)
                 # T_scout.append(scout_pos)
                 # T_prey.append(prey_pos)
