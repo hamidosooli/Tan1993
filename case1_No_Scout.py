@@ -161,19 +161,19 @@ def rl_agent(beta=0.8):
 
             # if eps>490:
             #     print(Q[10:20, :])if hunter_sensation_prime == [0, 0]:
-
-            if hunter_sensation_prime[0] == 0 and hunter_sensation_prime[1] == 0:
-                T_hunter.append(hunter_pos)
-                T_scout.append(scout_pos)
-                T_prey.append(prey_pos)
+            hunter_pos = hunter_pos_prime
+            prey_pos = prey_pos_prime
+            if hunter_sensation[0] == 0 and hunter_sensation[1] == 0:
+                # T_hunter.append(hunter_pos)
+                # T_scout.append(scout_pos)
+                # T_prey.append(prey_pos)
                 steps.append(t_step)
                 see_steps.append(s)
                 rewards.append(sum(R))
                 see_rewards.append(sum(R_prime))
                 print(f'In episode {eps + 1} of {NUM_EPISODES}, the prey was captured in {t_step + 1} steps')
                 break
-            hunter_pos = hunter_pos_prime
-            prey_pos = prey_pos_prime
+
     return T_hunter, T_scout, T_prey, A_hunter, A_scout, A_prey, rewards, steps, see_rewards, see_steps, Q
 
 
