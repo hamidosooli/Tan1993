@@ -101,7 +101,6 @@ def rl_agent(beta=0.8):
         A_hunter = []
         A_prey = []
 
-        counter = 0
         t_step = 0
         see_t_step = 0
         default_sensation = [np.nan, np.nan]
