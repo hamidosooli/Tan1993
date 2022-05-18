@@ -19,7 +19,8 @@ Col_num = 10
 row_lim = 9
 column_lim = 9
 
-default_sensation = [Hunter_VFD, Hunter_VFD]
+default_sensation = [np.nan, np.nan]
+can_see_it = False
 
 
 def Boltzmann(q, t=0.4):
@@ -44,13 +45,16 @@ def movement(position, action):
 
 def update_sensation(hunter_sensation):
     global default_sensation
+    global can_see_it
     if abs(hunter_sensation[0]) <= Hunter_VFD and abs(hunter_sensation[1]) <= Hunter_VFD:
         row = hunter_sensation[0]
         column = hunter_sensation[1]
         default_sensation = [row, column]
+        can_see_it = True
 
     else:  # if there is no prey in sight, a unique default sensation is used.
-        row, column = default_sensation
+        row, column = [np.nan, np.nan]
+        can_see_it = False
 
     hunter_sensation_prime = [row, column]
 
@@ -66,7 +70,7 @@ def reward(hunter_sensation_prime):
 
 
 def sensation2index(sensation, VFD):
-    if abs(sensation[0]) <= VFD and abs(sensation[1]) <= VFD:
+    if abs(sensation[0]) <= Hunter_VFD and abs(sensation[1]) <= Hunter_VFD:
         index = (sensation[0] + VFD) * (2 * VFD + 1) + (sensation[1] + VFD)
     else:
         index = (2 * Hunter_VFD + 1) ** 2
@@ -75,6 +79,7 @@ def sensation2index(sensation, VFD):
 
 def rl_agent(beta=0.8):
     global default_sensation
+    global can_see_it
     Q = np.zeros(((2 * Hunter_VFD + 1) ** 2 + 1, nA))
 
     steps = []
@@ -83,30 +88,27 @@ def rl_agent(beta=0.8):
     see_rewards = []
 
     for eps in range(NUM_EPISODES):
+        can_see_it = False
         hunter_pos = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
-        scout_pos = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
         prey_pos = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
 
         T_hunter = []
-        T_scout = []
         T_prey = []
 
         R = []
         R_prime = []
 
         A_hunter = []
-        A_scout = []
         A_prey = []
 
         counter = 0
         t_step = 0
-        s = 0
-        default_sensation = [Hunter_VFD, Hunter_VFD]
+        see_t_step = 0
+        default_sensation = [np.nan, np.nan]
         while True:
             t_step += 1
 
             T_hunter.append(hunter_pos)
-            T_scout.append(scout_pos)
             T_prey.append(prey_pos)
 
             hunter_sensation_step1 = np.subtract(prey_pos, hunter_pos)
@@ -121,18 +123,16 @@ def rl_agent(beta=0.8):
 
             hunter_sensation_prime_step1 = np.subtract(prey_pos, hunter_pos_prime)
             hunter_sensation_prime = update_sensation(hunter_sensation_prime_step1)
-
             re = reward(hunter_sensation)
             R.append(re)
 
             A_hunter.append(hunter_action)
             A_prey.append(prey_action)
 
-            if default_sensation != [Hunter_VFD, Hunter_VFD]:
+            if can_see_it:
                 R_prime.append(re)
-                counter += 1
-            if counter >= 1:
-                s += 1
+                see_t_step += 1
+
             idx_prime = sensation2index(hunter_sensation_prime, Hunter_VFD)
             Q[idx, hunter_action] += beta * (re + gamma * np.max(Q[idx_prime, :]) - Q[idx, hunter_action])
 
@@ -140,24 +140,22 @@ def rl_agent(beta=0.8):
             prey_pos = prey_pos_prime
             if hunter_sensation == [0, 0]:
                 steps.append(t_step)
-                see_steps.append(s)
+                see_steps.append(see_t_step)
                 rewards.append(sum(R))
                 see_rewards.append(sum(R_prime))
                 print(f'In episode {eps + 1} of {NUM_EPISODES}, the prey was captured in {t_step + 1} steps')
                 break
 
-    return T_hunter, T_scout, T_prey, A_hunter, A_scout, A_prey, rewards, steps, see_rewards, see_steps, Q
+    return T_hunter, T_prey, A_hunter, A_prey, rewards, steps, see_rewards, see_steps, Q
 
 
-T_hunter, T_scout, T_prey, A_hunter, A_scout, A_prey, rewards, steps, see_rewards, see_steps, Q = rl_agent(beta=0.8)
+T_hunter, T_prey, A_hunter, A_prey, rewards, steps, see_rewards, see_steps, Q = rl_agent(beta=0.8)
 
 with h5py.File(f'Tan1993_case1.hdf5', "w") as f:
     f.create_dataset('T_hunter', data=T_hunter)
-    f.create_dataset('T_scout', data=T_scout)
     f.create_dataset('T_prey', data=T_prey)
 
     f.create_dataset('A_hunter', data=A_hunter)
-    f.create_dataset('A_scout', data=A_scout)
     f.create_dataset('A_prey', data=A_prey)
 
     f.create_dataset('rewards', data=rewards)

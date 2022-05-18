@@ -25,11 +25,11 @@ Q = []
 # for i in range(50):
 with h5py.File(f'Tan1993_case1.hdf5', 'r') as gw_ma:
     T_hunter.append(np.asarray(gw_ma['T_hunter']))
-    T_scout.append(np.asarray(gw_ma['T_scout']))
+    # T_scout.append(np.asarray(gw_ma['T_scout']))
     T_prey.append(np.asarray(gw_ma['T_prey']))
 
     A_hunter.append(np.asarray(gw_ma['A_hunter']))
-    A_scout.append(np.asarray(gw_ma['A_scout']))
+    # A_scout.append(np.asarray(gw_ma['A_scout']))
     A_prey.append(np.asarray(gw_ma['A_prey']))
 
     rewards.append(np.asarray(gw_ma['rewards']))
@@ -43,7 +43,7 @@ with h5py.File(f'Tan1993_case1.hdf5', 'r') as gw_ma:
     # #
     animate(T_hunter[0], T_hunter[0], T_prey[0],
             A_hunter[0], A_hunter[0], A_prey[0],
-            hunter_vfd, scout_vfd, wait_time=0.5)
+            hunter_vfd, scout_vfd, wait_time=.5)
 
 plt.figure('Rewards')
 plt.xlabel('Episodes')
