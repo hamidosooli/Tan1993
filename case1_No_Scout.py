@@ -70,7 +70,8 @@ def reward(hunter_sensation_prime):
 
 
 def sensation2index(sensation, VFD):
-    if abs(sensation[0]) <= Hunter_VFD and abs(sensation[1]) <= Hunter_VFD:
+    global can_see_it
+    if can_see_it:
         index = (sensation[0] + VFD) * (2 * VFD + 1) + (sensation[1] + VFD)
     else:
         index = (2 * Hunter_VFD + 1) ** 2
