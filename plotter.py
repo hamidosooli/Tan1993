@@ -41,9 +41,9 @@ with h5py.File(f'Tan1993_case1.hdf5', 'r') as gw_ma:
 
     # Q.append(np.asarray(gw_ma['Q']))
     # #
-    animate(T_hunter[0], T_hunter[0], T_prey[0],
-            A_hunter[0], A_hunter[0], A_prey[0],
-            hunter_vfd, scout_vfd, wait_time=.5)
+    # animate(T_hunter[0], T_hunter[0], T_prey[0],
+    #         A_hunter[0], A_hunter[0], A_prey[0],
+    #         hunter_vfd, scout_vfd, wait_time=.5)
 
 plt.figure('Rewards')
 plt.xlabel('Episodes')

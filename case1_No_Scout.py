@@ -74,7 +74,7 @@ def sensation2index(sensation, VFD):
     if can_see_it:
         index = (sensation[0] + VFD) * (2 * VFD + 1) + (sensation[1] + VFD)
     else:
-        index = (2 * Hunter_VFD + 1) ** 2
+        index = (2 * VFD + 1) ** 2
     return index
 
 
@@ -113,8 +113,10 @@ def rl_agent(beta=0.8):
 
             hunter_sensation_step1 = np.subtract(prey_pos, hunter_pos)
             hunter_sensation = update_sensation(hunter_sensation_step1)
+
             idx = sensation2index(hunter_sensation, Hunter_VFD)
             hunter_probs = Boltzmann(Q[idx, :])
+
             hunter_action = np.random.choice(ACTIONS, p=hunter_probs)
             prey_action = np.random.choice(ACTIONS)
 
@@ -123,6 +125,7 @@ def rl_agent(beta=0.8):
 
             hunter_sensation_prime_step1 = np.subtract(prey_pos, hunter_pos_prime)
             hunter_sensation_prime = update_sensation(hunter_sensation_prime_step1)
+
             re = reward(hunter_sensation)
             R.append(re)
 
@@ -139,11 +142,15 @@ def rl_agent(beta=0.8):
             hunter_pos = hunter_pos_prime
             prey_pos = prey_pos_prime
             if hunter_sensation == [0, 0]:
-                steps.append(t_step)
-                see_steps.append(see_t_step)
+
+                steps.append(t_step+1)
+                see_steps.append(see_t_step+1)
+
                 rewards.append(sum(R))
                 see_rewards.append(sum(R_prime))
+
                 print(f'In episode {eps + 1} of {NUM_EPISODES}, the prey was captured in {t_step + 1} steps')
+
                 break
 
     return T_hunter, T_prey, A_hunter, A_prey, rewards, steps, see_rewards, see_steps, Q
