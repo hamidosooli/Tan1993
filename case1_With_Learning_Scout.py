@@ -17,8 +17,8 @@ gamma = .9
 
 Row_num = 10
 Col_num = 10
-row_lim = 9
-column_lim = 9
+row_lim = Row_num - 1
+column_lim = Col_num - 1
 
 can_see_it = False
 can_see_it_scout = False

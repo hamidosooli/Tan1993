@@ -10,19 +10,13 @@ import pygame as pg
 import time
 
 
-'''If you need to use the big environment make BIG_ENV = True'''
-BIG_ENV = False
-
 # Constants
 WIDTH = 800  # width of the environment (px)
 HEIGHT = 800  # height of the environment (px)
 TS = 10  # delay in msec
-if BIG_ENV:
-    Col_num = 50  # number of columns
-    Row_num = 50  # number of rows
-else:
-    Col_num = 10  # number of columns
-    Row_num = 10  # number of rows
+Col_num = 10  # number of columns
+Row_num = 10  # number of rows
+
 
 # define colors
 bg_color = pg.Color(255, 255, 255)
