@@ -94,7 +94,8 @@ def update_sensation_rescuer(rescuer_sensation, scouts_sensation, scouts2rescuer
     can_see_it_rescuers[rescuer_num] = False
     global default_sensation
     global num_scouts4rescuers
-    if abs(rescuer_sensation[0]) <= rescuers_VFD[rescuer_num] and abs(rescuer_sensation[1]) <= rescuers_VFD[rescuer_num]:
+    if (abs(rescuer_sensation[0]) <= rescuers_VFD[rescuer_num] and
+            abs(rescuer_sensation[1]) <= rescuers_VFD[rescuer_num]):
         row = rescuer_sensation[0]
         column = rescuer_sensation[1]
         can_see_it_rescuers[rescuer_num] = True
@@ -102,7 +103,8 @@ def update_sensation_rescuer(rescuer_sensation, scouts_sensation, scouts2rescuer
     else:
         for i in range(int(num_scouts4rescuers[rescuer_num])):
             idx_scout = idx_scouts4rescuers_organized[rescuer_num][i]
-            if abs(scouts_sensation[idx_scout, 0]) <= scouts_VFD[idx_scout] and abs(scouts_sensation[idx_scout, 1]) <= scouts_VFD[idx_scout]:
+            if (abs(scouts_sensation[idx_scout, 0]) <= scouts_VFD[idx_scout] and
+                    abs(scouts_sensation[idx_scout, 1]) <= scouts_VFD[idx_scout]):
                 row = scouts2rescuer[idx_scout, 0] + scouts_sensation[idx_scout, 0]
                 column = scouts2rescuer[idx_scout, 1] + scouts_sensation[idx_scout, 1]
                 can_see_it_rescuers[rescuer_num] = True
@@ -329,10 +331,10 @@ def rl_agent(beta=0.8):
 
                 break
 
-    return T_rescuers, T_scouts, T_victim, rewards, steps, see_rewards, see_steps, Q
+    return T_rescuers, T_scouts, T_victim, rewards, steps, see_rewards, see_steps, Q_scouts, Q_rescuers
 
 
-T_rescuers, T_scouts, T_victim, rewards, steps, see_rewards, see_steps, Q = rl_agent(beta=0.8)
+T_rescuers, T_scouts, T_victim, rewards, steps, see_rewards, see_steps, Q_scouts, Q_rescuers = rl_agent(beta=0.8)
 
 with h5py.File(f'Tan1993_multi_rescuers_with_multi_learning_scout.hdf5', "w") as f:
     f.create_dataset('T_rescuers', data=T_rescuers)
@@ -344,4 +346,5 @@ with h5py.File(f'Tan1993_multi_rescuers_with_multi_learning_scout.hdf5', "w") as
     f.create_dataset('see_rewards', data=see_rewards)
     f.create_dataset('see_steps', data=see_steps)
 
-    f.create_dataset('Q', data=Q)
+    f.create_dataset('Q_scouts', data=Q_scouts)
+    f.create_dataset('Q_rescuers', data=Q_rescuers)
