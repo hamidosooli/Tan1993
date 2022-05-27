@@ -12,12 +12,12 @@ nA = len(ACTIONS)
 
 NUM_EPISODES = 500
 Hunter_VFD = 2  # Hunter's visual field depth
-Scouts_VFD = [2, 2, 2]  # Visual field depth for each scout
+Scouts_VFD = [2, 3]  # Visual field depth for each scout
 num_Scouts = len(Scouts_VFD)
 gamma = .9
 
-Row_num = 30
-Col_num = 30
+Row_num = 20
+Col_num = 20
 row_lim = Row_num - 1
 column_lim = Col_num - 1
 
@@ -65,25 +65,22 @@ def update_sensation_scout(scout_sensation, scout_num):
 
 def update_sensation(hunter_sensation, scouts_sensation, scouts2hunter):
     global can_see_it
+    can_see_it = False
     global default_sensation
-    global NoOne
-    NoOne = True
     if abs(hunter_sensation[0]) <= Hunter_VFD and abs(hunter_sensation[1]) <= Hunter_VFD:
         row = hunter_sensation[0]
         column = hunter_sensation[1]
         can_see_it = True
         default_sensation = [row, column]
-    for i in range(num_Scouts):
-        if abs(scouts_sensation[i, 0]) <= Scouts_VFD[i] and abs(scouts_sensation[i, 1]) <= Scouts_VFD[i] and not can_see_it:
-            row = scouts2hunter[i, 0] + scouts_sensation[i, 0]
-            column = scouts2hunter[i, 1] + scouts_sensation[i, 1]
-            can_see_it = True
-            default_sensation = [row, column]
-            NoOne = False
-    if NoOne:  # if there is no prey in sight, a unique default sensation is used.
+    else:
+        for i in range(num_Scouts):
+            if abs(scouts_sensation[i, 0]) <= Scouts_VFD[i] and abs(scouts_sensation[i, 1]) <= Scouts_VFD[i]:
+                row = scouts2hunter[i, 0] + scouts_sensation[i, 0]
+                column = scouts2hunter[i, 1] + scouts_sensation[i, 1]
+                can_see_it = True
+                default_sensation = [row, column]
+    if not can_see_it:  # if there is no prey in sight, a unique default sensation is used.
         row, column = default_sensation
-        can_see_it = False
-
     hunter_sensation_prime = [row, column]
 
     return hunter_sensation_prime
@@ -247,7 +244,7 @@ def rl_agent(beta=0.8):
 
 T_hunter, T_scouts, T_prey, A_hunter, A_scout, A_prey, rewards, steps, see_rewards, see_steps, Q = rl_agent(beta=0.8)
 
-with h5py.File(f'Tan1993_case1_with_learning_scout.hdf5', "w") as f:
+with h5py.File(f'Tan1993_case1_with_several_learning_scout.hdf5', "w") as f:
     f.create_dataset('T_hunter', data=T_hunter)
     f.create_dataset('T_scouts', data=T_scouts)
     f.create_dataset('T_prey', data=T_prey)

@@ -1,7 +1,7 @@
 import numpy as np
 import h5py
-
-
+import time
+tic = time.time()
 # Actions
 FORWARD = 0
 BACKWARD = 1
@@ -246,3 +246,4 @@ with h5py.File(f'Tan1993_case1_with_learning_scout_2&4_100runs.hdf5', "w") as f:
     f.create_dataset('see_steps', data=see_steps_runs)
     f.create_dataset('see_rewards_scout', data=see_rewards_scout_runs)
     f.create_dataset('see_steps_scout', data=see_steps_scout_runs)
+print(f'This code took {time.time() - tic} seconds to finish')

@@ -4,19 +4,20 @@ import matplotlib.pyplot as plt
 import h5py
 
 hunter_vfd = 2
-scout_vfd = 2
+scout_vfd = [2,3]
 # mode = 'Multi Runs'
 mode = 'Single Run'
-exp = 'No Scout'
+# exp = 'No Scout'
 # exp = 'With Random Scout'
-# exp = 'With Leaning Scout'
+exp = 'With Leaning Scout'
 
 if exp == 'No Scout':
     filename = 'Tan1993_case1_no_scout.hdf5'
 elif exp == 'With Random Scout':
     filename = 'Tan1993_case1_with_random_scout.hdf5'
 elif exp == 'With Leaning Scout':
-    filename = 'Tan1993_case1_with_learning_scout.hdf5'
+    # filename = 'Tan1993_case1_with_learning_scout.hdf5'
+    filename = 'Tan1993_case1_with_several_learning_scout.hdf5'
 
 T_hunter = []
 T_scout = []
@@ -50,16 +51,16 @@ with h5py.File(filename, 'r') as gw_ma:
         rewards_scout.append(np.asarray(gw_ma['rewards_scout']))
         see_rewards_scout.append(np.asarray(gw_ma['see_rewards_scout']))
         see_steps_scout.append(np.asarray(gw_ma['see_steps_scout']))
-    # if exp != 'No Scout':
-    #     T_scout.append(np.asarray(gw_ma['T_scout']))
-    #     A_scout.append(np.asarray(gw_ma['A_scout']))
-    #     animate(T_hunter[0], T_scout[0], T_prey[0],
-    #             A_hunter[0], A_scout[0], A_prey[0],
-    #             hunter_vfd, scout_vfd, wait_time=.5, have_scout=True)
-    # else:
-    #     animate(T_hunter[0], [], T_prey[0],
-    #             A_hunter[0], [], A_prey[0],
-    #             hunter_vfd, scout_vfd, wait_time=.5, have_scout=False)
+    if exp != 'No Scout':
+        T_scout.append(np.asarray(gw_ma['T_scouts']))
+        A_scout.append(np.asarray(gw_ma['A_scout']))
+        animate(T_hunter[0], T_scout, T_prey[0],
+                A_hunter[0], A_scout, A_prey[0],
+                hunter_vfd, scout_vfd, wait_time=.5, have_scout=True)
+    else:
+        animate(T_hunter[0], [], T_prey[0],
+                A_hunter[0], [], A_prey[0],
+                hunter_vfd, scout_vfd, wait_time=.5, have_scout=False)
 
 plt.figure('Rewards')
 plt.xlabel('Episodes')

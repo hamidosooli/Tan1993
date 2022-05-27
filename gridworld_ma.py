@@ -6,16 +6,17 @@ Code: Reza Ahmadzadeh
 Late modified: 10/19/2021
 '''
 import numpy as np
+import pygame
 import pygame as pg
 import time
-
+pygame.init()
 
 # Constants
 WIDTH = 800  # width of the environment (px)
 HEIGHT = 800  # height of the environment (px)
 TS = 10  # delay in msec
-Col_num = 10  # number of columns
-Row_num = 10  # number of rows
+Col_num = 20  # number of columns
+Row_num = 20  # number of rows
 
 
 # define colors
@@ -67,12 +68,6 @@ class Agent:
             return 100  # goal reward
         if loc[1] == goal_pos_x2 and loc[0] == goal_pos_y2 and self.BOX_IS_FULL:
             return 100  # goal reward
-        # elif self.map[(int(loc[0] / (HEIGHT // Row_num)), int(loc[1] / (WIDTH // Col_num)))] == 3:
-        #     return -25  # puddle punishment
-        # elif self.map[(int(loc[0] / (HEIGHT // Row_num)), int(loc[1] / (WIDTH // Col_num)))] == 7:
-        #     return -50  # flame punishment
-        # elif self.map[(int(loc[0] / (HEIGHT // Row_num)), int(loc[1] / (WIDTH // Col_num)))] == 8:
-        #     return -75  # volcano punishment
         else:
             return -1  # decreasing battery level
 
@@ -108,11 +103,11 @@ class Agent:
             self.show(bg_color)
 
 
-def animate(trajectory1, trajectory2, trajectory3,
-            action_history1, action_history2, action_history3,
-            rescuer_vfd, scout_vfd,
-            wait_time, have_scout):
+def animate(rescuers_traj, scouts_traj, prey_traj, rescuer_vfd, scout_vfd, wait_time, have_scout):
 
+    font = pg.font.SysFont('arial', 50)
+
+    num_scouts = len(scout_vfd)
     pg.init()  # initialize pygame
     screen = pg.display.set_mode((WIDTH+2, HEIGHT+2))   # set up the screen
     pg.display.set_caption("Hamid Osooli")              # add a caption
@@ -129,7 +124,7 @@ def animate(trajectory1, trajectory2, trajectory3,
         img_mdf_scout = pg.transform.scale(img_scout, (WIDTH // Col_num, HEIGHT // Row_num))
 
     bg.fill(bg_color)
-    screen.blit(bg, (0,0))
+    screen.blit(bg, (0, 0))
     clock = pg.time.Clock()
     pg.display.flip()
     run = True
@@ -139,8 +134,7 @@ def animate(trajectory1, trajectory2, trajectory3,
             if event.type == pg.QUIT:
                 run = False
         if have_scout:
-            for state1, state2, state3, action1, action2, action3 in zip(trajectory1, trajectory2, trajectory3,
-                                                                         action_history1, action_history2, action_history3):
+            for state1, state2, state3 in zip(rescuers_traj, np.moveaxis(scouts_traj[0], 0, -1), prey_traj):
                 # rescuer visual field depth
                 for j in range(int(max(state1[1]-rescuer_vfd, 0)), int(min(Row_num, state1[1]+rescuer_vfd+1))):
                     for i in range(int(max(state1[0]-rescuer_vfd, 0)), int(min(Col_num, state1[0]+rescuer_vfd+1))):
@@ -148,16 +142,23 @@ def animate(trajectory1, trajectory2, trajectory3,
                                        (WIDTH // Col_num), (HEIGHT // Row_num))
                         pg.draw.rect(screen, vfdh_color, rect)
 
-                # scout visual field depth
-                for j in range(int(max(state2[1]-scout_vfd, 0)), int(min(Col_num, state2[1]+scout_vfd+1))):
-                    for i in range(int(max(state2[0]-scout_vfd, 0)), int(min(Col_num, state2[0]+scout_vfd+1))):
-                        rect = pg.Rect(j * (WIDTH // Col_num), i * (HEIGHT // Row_num),
-                                       (WIDTH // Col_num), (HEIGHT // Row_num))
-                        pg.draw.rect(screen, vfds_color, rect)
+                for num in range(num_scouts):
+                    # scout visual field depth
+                    for j in range(int(max(state2[1, num]-scout_vfd[num], 0)),
+                                   int(min(Col_num, state2[1, num]+scout_vfd[num]+1))):
+                        for i in range(int(max(state2[0, num]-scout_vfd[num], 0)),
+                                       int(min(Col_num, state2[0, num]+scout_vfd[num]+1))):
+                            rect = pg.Rect(j * (WIDTH // Col_num), i * (HEIGHT // Row_num),
+                                           (WIDTH // Col_num), (HEIGHT // Row_num))
+                            pg.draw.rect(screen, vfds_color, rect)
 
                 # agents
                 screen.blit(img_mdf_r, (state1[1] * (WIDTH // Col_num), state1[0] * (HEIGHT // Row_num)))
-                screen.blit(img_mdf_scout, (state2[1] * (WIDTH // Col_num), state2[0] * (HEIGHT // Row_num)))
+                for num in range(num_scouts):
+                    screen.blit(img_mdf_scout, (state2[1, num] * (WIDTH // Col_num),
+                                                state2[0, num] * (HEIGHT // Row_num)))
+                    screen.blit(font.render(str(num+1), True, (0, 0, 0)),
+                                (state2[1, num] * (WIDTH // Col_num), state2[0, num] * (HEIGHT // Row_num)))
                 screen.blit(img_mdf_victim, (state3[1] * (WIDTH // Col_num), state3[0] * (HEIGHT // Row_num)))
 
                 draw_grid(screen)
@@ -167,14 +168,16 @@ def animate(trajectory1, trajectory2, trajectory3,
 
                 screen.blit(bg, (state1[1] * (WIDTH // Col_num), state1[0] * (HEIGHT // Row_num)))
                 screen.blit(bg, (state3[1] * (WIDTH // Col_num), state3[0] * (HEIGHT // Row_num)))
-
-                screen.blit(bg, (state2[1] * (WIDTH // Col_num), state2[0] * (HEIGHT // Row_num)))
-                # scout visual field depth
-                for j in range(int(max(state2[1] - scout_vfd, 0)), int(min(Row_num, state2[1] + scout_vfd + 1))):
-                    for i in range(int(max(state2[0] - scout_vfd, 0)), int(min(Col_num, state2[0] + scout_vfd + 1))):
-                        rect = pg.Rect(j * (WIDTH // Col_num), i * (HEIGHT // Row_num),
-                                       (WIDTH // Col_num), (HEIGHT // Row_num))
-                        pg.draw.rect(screen, bg_color, rect)
+                for num in range(num_scouts):
+                    screen.blit(bg, (state2[1, num] * (WIDTH // Col_num), state2[0, num] * (HEIGHT // Row_num)))
+                    # scout visual field depth
+                    for j in range(int(max(state2[1, num] - scout_vfd[num], 0)),
+                                   int(min(Row_num, state2[1, num] + scout_vfd[num] + 1))):
+                        for i in range(int(max(state2[0, num] - scout_vfd[num], 0)),
+                                       int(min(Col_num, state2[0, num] + scout_vfd[num] + 1))):
+                            rect = pg.Rect(j * (WIDTH // Col_num), i * (HEIGHT // Row_num),
+                                           (WIDTH // Col_num), (HEIGHT // Row_num))
+                            pg.draw.rect(screen, bg_color, rect)
 
                 # rescuer visual field depths
                 for j in range(int(max(state1[1]-rescuer_vfd, 0)), int(min(Row_num, state1[1]+rescuer_vfd+1))):
@@ -183,11 +186,17 @@ def animate(trajectory1, trajectory2, trajectory3,
                                            (WIDTH // Col_num), (HEIGHT // Row_num))
                         pg.draw.rect(screen, bg_color, rect)
 
-            screen.blit(img_mdf_r, (trajectory1[-1][1] * (WIDTH // Col_num), trajectory1[-1][0] * (HEIGHT // Row_num)))
-            screen.blit(img_mdf_scout, (trajectory2[-1][1] * (WIDTH // Col_num), trajectory2[-1][0] * (HEIGHT // Row_num)))
-            screen.blit(img_mdf_victim, (trajectory3[-1][1] * (WIDTH // Col_num), trajectory3[-1][0] * (HEIGHT // Row_num)))
+            screen.blit(img_mdf_r, (rescuers_traj[-1][1] * (WIDTH // Col_num),
+                                    rescuers_traj[-1][0] * (HEIGHT // Row_num)))
+            for num in range(num_scouts):
+                screen.blit(img_mdf_scout,
+                            (scouts_traj[-1][1, num] * (WIDTH // Col_num),
+                             scouts_traj[-1][0, num] * (HEIGHT // Row_num)))
+            screen.blit(img_mdf_victim,
+                        (prey_traj[-1][1] * (WIDTH // Col_num),
+                         prey_traj[-1][0] * (HEIGHT // Row_num)))
         else:
-            for state1, state3, action1, action3 in zip(trajectory1, trajectory3, action_history1, action_history3):
+            for state1, state3 in zip(rescuers_traj, prey_traj):
                 # rescuer visual field depth
                 for j in range(int(max(state1[1]-rescuer_vfd, 0)), int(min(Row_num, state1[1]+rescuer_vfd+1))):
                     for i in range(int(max(state1[0]-rescuer_vfd, 0)), int(min(Col_num, state1[0]+rescuer_vfd+1))):
@@ -215,8 +224,10 @@ def animate(trajectory1, trajectory2, trajectory3,
                                            (WIDTH // Col_num), (HEIGHT // Row_num))
                         pg.draw.rect(screen, bg_color, rect)
 
-            screen.blit(img_mdf_r, (trajectory1[-1][1] * (WIDTH // Col_num), trajectory1[-1][0] * (HEIGHT // Row_num)))
-            screen.blit(img_mdf_victim, (trajectory3[-1][1] * (WIDTH // Col_num), trajectory3[-1][0] * (HEIGHT // Row_num)))
+            screen.blit(img_mdf_r, (rescuers_traj[-1][1] * (WIDTH // Col_num),
+                                    rescuers_traj[-1][0] * (HEIGHT // Row_num)))
+            screen.blit(img_mdf_victim, (prey_traj[-1][1] * (WIDTH // Col_num),
+                                         prey_traj[-1][0] * (HEIGHT // Row_num)))
         draw_grid(screen)
         pg.display.flip()
         pg.display.update()
