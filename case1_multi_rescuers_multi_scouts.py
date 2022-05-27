@@ -80,7 +80,7 @@ def update_sensation_scout(scouts_sensation, scouts_num):
         column = scouts_sensation[1]
         can_see_it_scout[scouts_num] = True
 
-    else:  # if there is no prey in sight, a unique default sensation is used.
+    else:  # if there is no victim in sight, a unique default sensation is used.
         row, column = [np.nan, np.nan]
         can_see_it_scout[scouts_num] = False
 
@@ -107,7 +107,7 @@ def update_sensation_rescuer(rescuer_sensation, scouts_sensation, scouts2rescuer
                 column = scouts2rescuer[idx_scout, 1] + scouts_sensation[idx_scout, 1]
                 can_see_it_rescuers[rescuer_num] = True
                 default_sensation[rescuer_num] = [row, column]
-    if not can_see_it_rescuers[rescuer_num]:  # if there is no prey in sight, a unique default sensation is used.
+    if not can_see_it_rescuers[rescuer_num]:  # if there is no victim in sight, a unique default sensation is used.
         row, column = default_sensation[rescuer_num]
     rescuer_sensation_prime = [row, column]
 
@@ -165,7 +165,7 @@ def rl_agent(beta=0.8):
                                [row_lim, col_lim]])  # np.tile([row_lim, col_lim], (num_scouts, 1))
         scouts_pos_prime = scouts_pos.copy()
 
-        prey_pos = [Row_num/2, Col_num/2]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
+        victim_pos = [Row_num/2, Col_num/2]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
 
         T_rescuers = []
         R_rescuers = []
@@ -185,14 +185,14 @@ def rl_agent(beta=0.8):
         scouts_sensation_step1 = np.zeros((num_scouts, 2))
         scouts_sensation = np.zeros((num_scouts, 2))
 
-        T_prey = []
+        T_victim = []
 
         t_step = 0
         see_t_step = np.zeros((num_scouts,))
         while True:
             t_step += 1
 
-            T_prey.append(prey_pos)
+            T_victim.append(victim_pos)
 
             scouts_pos_step1 = np.empty((num_rescuers, num_scouts, 2))
             scouts_pos_step1[:, :, 0] = np.tile(scouts_pos[:, 0], (num_rescuers, 1))
@@ -206,12 +206,12 @@ def rl_agent(beta=0.8):
 
             for i in range(num_scouts):
                 T_scouts[i].append(scouts_pos[i, :])
-                scouts_sensation_step1[i, :] = np.subtract(prey_pos, scouts_pos[i, :])
+                scouts_sensation_step1[i, :] = np.subtract(victim_pos, scouts_pos[i, :])
                 scouts_sensation[i, :] = update_sensation_scout(scouts_sensation_step1[i, :], i)
 
             for k in range(num_rescuers):
                 T_rescuers[k].append(rescuers_pos[k, :])
-                rescuers_sensation_step1[k, :] = np.subtract(prey_pos, rescuers_pos[k, :])
+                rescuers_sensation_step1[k, :] = np.subtract(victim_pos, rescuers_pos[k, :])
                 rescuers_sensation[k, :] = update_sensation_rescuer(rescuers_sensation_step1[k, :],
                                                                     scouts_sensation,
                                                                     scouts2rescuers[k, :], k)
@@ -244,8 +244,8 @@ def rl_agent(beta=0.8):
                 scouts_action[i] = np.random.choice(ACTIONS, p=scouts_probs[i])
                 scouts_pos_prime[i, :] = movement(scouts_pos[i, :], scouts_action[i])
 
-            prey_action = np.random.choice(ACTIONS)
-            prey_pos_prime = movement(prey_pos, prey_action)
+            victim_action = np.random.choice(ACTIONS)
+            victim_pos_prime = movement(victim_pos, victim_action)
 
             scouts_sensation_prime_step1 = np.zeros((num_scouts, 2))
             scouts_sensation_prime = np.zeros((num_scouts, 2))
@@ -265,13 +265,13 @@ def rl_agent(beta=0.8):
             scouts2rescuers_prime = np.subtract(scouts_pos_prime_step1, rescuers_pos_prime_step1)
 
             for i in range(num_scouts):
-                scouts_sensation_prime_step1[i, :] = np.subtract(prey_pos, scouts_pos_prime[i, :])
+                scouts_sensation_prime_step1[i, :] = np.subtract(victim_pos, scouts_pos_prime[i, :])
                 scouts_sensation_prime[i, :] = update_sensation_scout(scouts_sensation_prime_step1[i, :], i)
 
             rescuer_sensation_prime_step1 = np.zeros((num_rescuers, 2))
             rescuer_sensation_prime = np.zeros((num_rescuers, 2))
             for k in range(num_rescuers):
-                rescuer_sensation_prime_step1[k, :] = np.subtract(prey_pos, rescuers_pos_prime[k, :])
+                rescuer_sensation_prime_step1[k, :] = np.subtract(victim_pos, rescuers_pos_prime[k, :])
                 rescuer_sensation_prime[k, :] = update_sensation_rescuer(rescuer_sensation_prime_step1[k, :],
                                                                          scouts_sensation_prime,
                                                                          scouts2rescuers_prime[k, :], k)
@@ -312,7 +312,7 @@ def rl_agent(beta=0.8):
                                                               Q_scouts[i][idx_scout[i], int(scouts_action[i])])
 
             rescuers_pos = rescuers_pos_prime.copy()
-            prey_pos = prey_pos_prime
+            victim_pos = victim_pos_prime
             scouts_pos = scouts_pos_prime.copy()
             if np.array_equal(rescuers_sensation, np.tile([0, 0], (num_rescuers, 1))):
 
@@ -325,19 +325,19 @@ def rl_agent(beta=0.8):
                 for k in range(num_rescuers):
                     rewards.append(sum(R_rescuers[k]))
 
-                print(f'In episode {eps + 1} of {NUM_EPISODES}, the prey was captured in {t_step + 1} steps')
+                print(f'In episode {eps + 1} of {NUM_EPISODES}, the victim was rescued in {t_step + 1} steps')
 
                 break
 
-    return T_rescuers, T_scouts, T_prey, rewards, steps, see_rewards, see_steps, Q
+    return T_rescuers, T_scouts, T_victim, rewards, steps, see_rewards, see_steps, Q
 
 
-T_rescuers, T_scouts, T_prey, rewards, steps, see_rewards, see_steps, Q = rl_agent(beta=0.8)
+T_rescuers, T_scouts, T_victim, rewards, steps, see_rewards, see_steps, Q = rl_agent(beta=0.8)
 
 with h5py.File(f'Tan1993_multi_rescuers_with_multi_learning_scout.hdf5', "w") as f:
     f.create_dataset('T_rescuers', data=T_rescuers)
     f.create_dataset('T_scouts', data=T_scouts)
-    f.create_dataset('T_prey', data=T_prey)
+    f.create_dataset('T_victim', data=T_victim)
 
     f.create_dataset('rewards', data=rewards)
     f.create_dataset('steps', data=steps)
