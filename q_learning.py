@@ -1,5 +1,5 @@
 import numpy as np
-from agent import Agent
+from Tan1993.agent import Agent
 import h5py
 
 

@@ -16,3 +16,6 @@ def eps_greedy(q, actions, epsilon=0.05):
 def ucb(q, c, step, N):
     ucb_eq = q + c * np.sqrt(np.log(step) / N)
     return greedy(ucb_eq)
+
+def Boltzmann(q, t=0.4):
+    return np.exp(q / t) / np.sum(np.exp(q / t))

@@ -1,6 +1,7 @@
 import numpy as np
 import h5py
-
+import matplotlib.pyplot as plt
+from action_selection import eps_greedy
 # Actions
 FORWARD = 0
 BACKWARD = 1
@@ -147,12 +148,13 @@ def rl_agent(beta=0.8):
         Q_rescuers.append(np.zeros(((2 * Row_num + 1) ** 2 + 1, num_Acts)))
         steps.append([])
         rewards.append([])
-        see_steps.append([])
-        see_rewards.append([])
+
 
     Q_scouts = []
     for i in range(num_scouts):
         Q_scouts.append(np.zeros(((2 * scouts_VFD[i] + 1) ** 2 + 1, num_Acts)))
+        see_steps.append([])
+        see_rewards.append([])
 
     for eps in range(NUM_EPISODES):
         can_see_it_rescuers = np.full((num_rescuers, ), False)
@@ -233,8 +235,8 @@ def rl_agent(beta=0.8):
             rescuer_action = np.empty((num_rescuers, ))
             for k in range(num_rescuers):
                 idx_rescuers[k] = sensation2index(rescuers_sensation[k, :], rescuers_VFD[k], can_see_it_rescuers[k])
-                rescuer_probs[k, :] = Boltzmann(Q_rescuers[k][idx_rescuers[k], :], t=T)
-                rescuer_action[k] = np.random.choice(ACTIONS, p=rescuer_probs[k])
+                # rescuer_probs[k, :] = Boltzmann(Q_rescuers[k][idx_rescuers[k], :], t=T)
+                rescuer_action[k] = eps_greedy(Q_rescuers[k][idx_rescuers[k], :], ACTIONS)  # np.random.choice(ACTIONS, p=rescuer_probs[k])
                 rescuers_pos_prime[k, :] = movement(rescuers_pos[k, :], rescuer_action[k])
 
             idx_scout = np.zeros((num_scouts, ), dtype=int)
@@ -242,8 +244,8 @@ def rl_agent(beta=0.8):
             scouts_action = np.empty((num_scouts, ))
             for i in range(num_scouts):
                 idx_scout[i] = sensation2index(scouts_sensation[i, :], scouts_VFD[i], can_see_it_scout[i])
-                scouts_probs[i, :] = Boltzmann(Q_scouts[i][idx_scout[i], :], t=T)
-                scouts_action[i] = np.random.choice(ACTIONS, p=scouts_probs[i])
+                # scouts_probs[i, :] = Boltzmann(Q_scouts[i][idx_scout[i], :], t=T)
+                scouts_action[i] = eps_greedy(Q_scouts[i][idx_scout[i], :], ACTIONS)  # np.random.choice(ACTIONS, p=scouts_probs[i])
                 scouts_pos_prime[i, :] = movement(scouts_pos[i, :], scouts_action[i])
 
             victim_action = np.random.choice(ACTIONS)
@@ -318,14 +320,13 @@ def rl_agent(beta=0.8):
             scouts_pos = scouts_pos_prime.copy()
             if np.array_equal(rescuers_sensation, np.tile([0, 0], (num_rescuers, 1))):
 
-                steps.append(t_step+1)
-
                 for i in range(num_scouts):
                     see_steps[i].append(see_t_step+1)
                     see_rewards[i].append(sum(R_scouts[i]))
 
                 for k in range(num_rescuers):
-                    rewards.append(sum(R_rescuers[k]))
+                    steps[k].append(t_step + 1)
+                    rewards[k].append(sum(R_rescuers[k]))
 
                 print(f'In episode {eps + 1} of {NUM_EPISODES}, the victim was rescued in {t_step + 1} steps')
 
@@ -335,16 +336,16 @@ def rl_agent(beta=0.8):
 
 
 T_rescuers, T_scouts, T_victim, rewards, steps, see_rewards, see_steps, Q_scouts, Q_rescuers = rl_agent(beta=0.8)
-
-with h5py.File(f'Tan1993_multi_rescuers_with_multi_learning_scout.hdf5', "w") as f:
+rewards = np.asarray(rewards)
+steps = np.asarray(steps)
+with h5py.File(f'Tan1993_multi_rescuers_with_multi_learning_scouts_epsGreedy.hdf5', "w") as f:
     f.create_dataset('T_rescuers', data=T_rescuers)
     f.create_dataset('T_scouts', data=T_scouts)
     f.create_dataset('T_victim', data=T_victim)
-
     f.create_dataset('rewards', data=rewards)
     f.create_dataset('steps', data=steps)
     f.create_dataset('see_rewards', data=see_rewards)
     f.create_dataset('see_steps', data=see_steps)
 
-    f.create_dataset('Q_scouts', data=Q_scouts)
-    f.create_dataset('Q_rescuers', data=Q_rescuers)
+    # f.create_dataset('Q_scouts', data=Q_scouts)
+    # f.create_dataset('Q_rescuers', data=np.asarray(Q_rescuers))

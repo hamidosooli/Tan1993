@@ -1,6 +1,6 @@
 import numpy as np
 import h5py
-
+from action_selection import eps_greedy
 
 # Actions
 FORWARD = 0
@@ -155,12 +155,12 @@ def rl_agent(beta=0.8):
             hunter_sensation = update_sensation(hunter_sensation_step1, scout_sensation, scout2hunter)
 
             idx = sensation2index(hunter_sensation, Row_num, can_see_it)
-            hunter_probs = Boltzmann(Q[idx, :])
-            hunter_action = np.random.choice(ACTIONS, p=hunter_probs)
+            # hunter_probs = Boltzmann(Q[idx, :])
+            hunter_action = eps_greedy(Q[idx, :], ACTIONS)#np.random.choice(ACTIONS, p=hunter_probs)
 
             idx_scout = sensation2index(scout_sensation, Scout_VFD, can_see_it_scout)
-            scout_probs = Boltzmann(Q_scout[idx_scout, :])
-            scout_action = np.random.choice(ACTIONS, p=scout_probs)
+            # scout_probs = Boltzmann(Q_scout[idx_scout, :])
+            scout_action = eps_greedy(Q_scout[idx_scout, :], ACTIONS)#np.random.choice(ACTIONS, p=scout_probs)
 
             prey_action = np.random.choice(ACTIONS)
 
@@ -200,9 +200,11 @@ def rl_agent(beta=0.8):
 
             hunter_pos = hunter_pos_prime
             scout_pos = scout_pos_prime
-            prey_pos = prey_pos_prime
-            if hunter_sensation == [0, 0]:
 
+            if t_step % 2 == 0:
+                prey_pos = prey_pos_prime
+
+            if hunter_sensation == [0, 0]:
                 steps.append(t_step+1)
                 see_steps.append(see_t_step+1)
                 see_steps_scout.append(see_t_step+1)
@@ -237,7 +239,7 @@ for run in range(NUM_RUNS):
     see_steps_scout_runs.append(see_steps_scout)
 
 
-with h5py.File(f'Tan1993_case1_with_learning_scout_2&2_100runs.hdf5', "w") as f:
+with h5py.File(f'Tan1993_case1_with_learning_scout_2&2_100runs_epsGreedy.hdf5', "w") as f:
 
     f.create_dataset('rewards', data=rewards_hunter_runs)
     f.create_dataset('rewards_scout', data=rewards_scout_runs)
