@@ -17,8 +17,7 @@ class Network:
         pos_array[:, :, 1] = np.tile(pos_list[:, 1].reshape(self.num_agents, 1), (1, self.num_agents))
 
         pos2pos = np.subtract(pos_array, np.transpose(pos_array, (1, 0, 2)))
-        output = np.multiply(adj_mat_loc, pos2pos)
-        return output
+        return pos2pos
 
     def sensed_pos(self, victim_pos_list, rs_pos_list):
         self.num_victims = len(victim_pos_list)

@@ -89,12 +89,13 @@ class Agent:
             num_scouts = np.sum(adj_mat[self.id, :])
             for ns in range(int(num_scouts)):
                 curr_scout = np.argwhere(adj_mat[self.id, :])[ns]
-                if any(sensation_evaluate[curr_scout, :][0].tolist()):
-                    first_victim = np.argwhere(sensation_evaluate[curr_scout, :])[0][0]
 
-                    next_sensation[0] = (pos2pos[self.id, curr_scout][0][0] +
+                if any(sensation_evaluate[curr_scout, :][0].tolist()):
+                    first_victim = np.argwhere(sensation_evaluate[curr_scout, :][0])[0]
+
+                    next_sensation[0] = (pos2pos[curr_scout, self.id][0][0] +
                                          raw_sensation[curr_scout, first_victim, :][0][0])
-                    next_sensation[1] = (pos2pos[self.id, curr_scout][0][1] +
+                    next_sensation[1] = (pos2pos[curr_scout, self.id][0][1] +
                                          raw_sensation[curr_scout, first_victim, :][0][1])
 
                     self.CanSeeIt = True
