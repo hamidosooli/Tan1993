@@ -1,7 +1,5 @@
 import numpy as np
 import h5py
-import matplotlib.pyplot as plt
-
 
 from action_selection import eps_greedy, Boltzmann
 from network import Network
@@ -16,7 +14,7 @@ LEFT = 3
 ACTIONS = [FORWARD, BACKWARD, RIGHT, LEFT]
 num_Acts = len(ACTIONS)
 
-NUM_EPISODES = 500
+NUM_EPISODES = 2000
 
 gamma = .9
 
@@ -81,16 +79,16 @@ def env():
     agent = Agent
 
     # Define the agents
-    r1 = agent(0, 'r', 1, Row_num, 2, [0, 0], num_Acts, Row_num, Col_num)  # First Rescuer
-    r2 = agent(1, 'r', 2, Row_num, 2, [0, col_lim], num_Acts, Row_num, Col_num)  # Second Rescuer
+    r1 = agent(0, 'r', 2, Row_num, 2, [0, 0], num_Acts, Row_num, Col_num)  # First Rescuer
+    r2 = agent(1, 'r', 3, Row_num, 2, [0, col_lim], num_Acts, Row_num, Col_num)  # Second Rescuer
 
     s1 = agent(2, 's', 3, 3, 2, [0, int(Col_num/2)], num_Acts, Row_num, Col_num)  # First Scout
     s2 = agent(3, 's', 2, 2, 2, [int(Row_num/2), 0], num_Acts, Row_num, Col_num)  # Second Scout
     s3 = agent(4, 's', 3, 3, 2, [int(Row_num/2), col_lim], num_Acts, Row_num, Col_num)  # Third Scout
 
     rs1 = agent(5, 'rs', 2, Row_num, 2, [row_lim, 0], num_Acts, Row_num, Col_num)  # First Rescuer\Scout
-    rs2 = agent(6, 'rs', 2, Row_num, 2, [row_lim, int(Col_num/2)], num_Acts, Row_num, Col_num)  # Second Rescuer\Scout
-    rs3 = agent(7, 'rs', 2, Row_num, 2, [row_lim, col_lim], num_Acts, Row_num, Col_num)  # Third Rescuer\Scout
+    rs2 = agent(6, 'rs', 3, Row_num, 2, [row_lim, int(Col_num/2)], num_Acts, Row_num, Col_num)  # Second Rescuer\Scout
+    rs3 = agent(7, 'rs', 4, Row_num, 2, [row_lim, col_lim], num_Acts, Row_num, Col_num)  # Third Rescuer\Scout
 
     v1 = agent(0, 'v', 0, 0, 1, [int(Row_num/2), int(Col_num/2)], num_Acts, Row_num, Col_num)
     v2 = agent(1, 'v', 0, 0, 1, [int(Row_num / 2) + 2, int(Col_num / 2) + 2], num_Acts, Row_num, Col_num)
@@ -167,6 +165,7 @@ def env():
             rs2.Traj.append(rs2.old_Pos)
             rs3.Traj.append(rs3.old_Pos)
 
+            # Keep track of the victims positions
             v1.Traj.append(v1.old_Pos)
             v2.Traj.append(v2.old_Pos)
             v3.Traj.append(v3.old_Pos)
@@ -186,8 +185,8 @@ def env():
 
             # Check to see if the sensations are in the agents visual fields
             eval_old_sensations = net.is_seen(np.array([r1.VisualField, r2.VisualField,
-                                                            s1.VisualField, s2.VisualField, s3.VisualField,
-                                                            rs1.VisualField, rs2.VisualField, rs3.VisualField]),
+                                                        s1.VisualField, s2.VisualField, s3.VisualField,
+                                                        rs1.VisualField, rs2.VisualField, rs3.VisualField]),
                                               old_raw_sensations)
 
             # Calculation of the sensations for the rescue team
@@ -370,43 +369,58 @@ def env():
             rs3.Q = q_learning(rs3.Q, rs3.old_Index, rs3.curr_Index, rs3.reward, rs3.action, alpha=0.8)
 
             # Check to see the team rescued any victim
-            if r1.Finish:
+            if r1.Finish and r1.First:
                 r1.Steps.append(t_step)
                 r1.Steps_seen.append(r1.t_step_seen)
+                r1.RewSum.append(np.sum(r1.RewHist))
+                r1.RewSum_seen.append(np.sum(r1.RewHist_seen))
                 adj_mat[:, r1.id] = 0
-            else:
+                r1.First = False
+            elif not r1.Finish:
                 r1.rescue_accomplished()
                 r1.old_Pos = r1.curr_Pos
 
-            if r2.Finish:
+            if r2.Finish and r2.First:
                 r2.Steps.append(t_step)
                 r2.Steps_seen.append(r2.t_step_seen)
+                r2.RewSum.append(np.sum(r2.RewHist))
+                r2.RewSum_seen.append(np.sum(r2.RewHist_seen))
                 adj_mat[:, r2.id] = 0
-            else:
+                r2.First = False
+            elif not r2.Finish:
                 r2.rescue_accomplished()
                 r2.old_Pos = r2.curr_Pos
 
-            if rs1.Finish:
+            if rs1.Finish and rs1.First:
                 rs1.Steps.append(t_step)
                 rs1.Steps_seen.append(rs1.t_step_seen)
+                rs1.RewSum.append(np.sum(rs1.RewHist))
+                rs1.RewSum_seen.append(np.sum(rs1.RewHist_seen))
                 adj_mat[:, rs1.id] = 0
-            else:
+                rs1.First = False
+            elif not rs1.Finish:
                 rs1.rescue_accomplished()
                 rs1.old_Pos = rs1.curr_Pos
 
-            if rs2.Finish:
+            if rs2.Finish and rs2.First:
                 rs2.Steps.append(t_step)
                 rs2.Steps_seen.append(rs2.t_step_seen)
+                rs2.RewSum.append(np.sum(rs2.RewHist))
+                rs2.RewSum_seen.append(np.sum(rs2.RewHist_seen))
                 adj_mat[:, rs2.id] = 0
-            else:
+                rs2.First = False
+            elif not rs2.Finish:
                 rs2.rescue_accomplished()
                 rs2.old_Pos = rs2.curr_Pos
 
-            if rs3.Finish:
+            if rs3.Finish and rs3.First:
                 rs3.Steps.append(t_step)
                 rs3.Steps_seen.append(rs3.t_step_seen)
+                rs3.RewSum.append(np.sum(rs3.RewHist))
+                rs3.RewSum_seen.append(np.sum(rs3.RewHist_seen))
                 adj_mat[:, rs3.id] = 0
-            else:
+                rs3.First = False
+            elif not rs3.Finish:
                 rs3.rescue_accomplished()
                 rs3.old_Pos = rs3.curr_Pos
 
@@ -419,55 +433,187 @@ def env():
             # Keep track of the steps
             # Remove the victim from the list
             # Update the victims position
-            if v1.Finish:
+            if v1.Finish and v1.First:
                 v1.Steps.append(t_step)
                 eval_old_sensations[:, v1.id] = False
                 eval_curr_sensations[:, v1.id] = False
-            else:
+                v1.First = False
+            elif not v1.Finish:
                 v1.victim_rescued([r1.old_Pos, r2.old_Pos,
                                    rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v1.old_Pos = v1.curr_Pos
 
-            if v2.Finish:
+            if v2.Finish and v2.First:
                 v2.Steps.append(t_step)
                 eval_old_sensations[:, v2.id] = False
                 eval_curr_sensations[:, v2.id] = False
-            else:
+                v2.First = False
+            elif not v2.Finish:
                 v2.victim_rescued([r1.old_Pos, r2.old_Pos,
                                    rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v2.old_Pos = v2.curr_Pos
 
-            if v3.Finish:
+            if v3.Finish and v3.First:
                 v3.Steps.append(t_step)
                 eval_old_sensations[:, v3.id] = False
                 eval_curr_sensations[:, v3.id] = False
-            else:
+                v3.First = False
+            elif not v3.Finish:
                 v3.victim_rescued([r1.old_Pos, r2.old_Pos,
                                    rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v3.old_Pos = v3.curr_Pos
 
-            if v4.Finish:
+            if v4.Finish and v4.First:
                 v4.Steps.append(t_step)
                 eval_old_sensations[:, v4.id] = False
                 eval_curr_sensations[:, v4.id] = False
-            else:
+                v4.First = False
+            elif not v4.Finish:
                 v4.victim_rescued([r1.old_Pos, r2.old_Pos,
                                    rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v4.old_Pos = v4.curr_Pos
 
-            if v5.Finish:
+            if v5.Finish and v5.First:
                 v5.Steps.append(t_step)
                 eval_old_sensations[:, v5.id] = False
                 eval_curr_sensations[:, v5.id] = False
-            else:
+                v5.First = False
+            elif not v5.Finish:
                 v5.victim_rescued([r1.old_Pos, r2.old_Pos,
                                    rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v5.old_Pos = v5.curr_Pos
 
             rescue_flags = [r1.Finish, r2.Finish,
-                            rs1.Finish, rs2.Finish, rs3.Finish]
+                            rs1.Finish, rs2.Finish, rs3.Finish,
+                            v1.Finish, v2.Finish, v3.Finish, v4.Finish, v5.Finish]
 
             if all(rescue_flags):
-                print(f'In episode {eps + 1} of {NUM_EPISODES}, all the victims were rescued in {t_step + 1} steps')
+
+                s1.RewSum.append(np.sum(s1.RewHist))
+                s1.RewSum_seen.append(np.sum(s1.RewHist_seen))
+
+                s2.RewSum.append(np.sum(s2.RewHist))
+                s2.RewSum_seen.append(np.sum(s2.RewHist_seen))
+
+                s3.RewSum.append(np.sum(s3.RewHist))
+                s3.RewSum_seen.append(np.sum(s3.RewHist_seen))
+
+                print(f'In episode {eps + 1} of {NUM_EPISODES}, all of the victims were rescued in {t_step + 1} steps')
+
                 break
-env()
+
+    return (r1.Traj, r2.Traj,
+            s1.Traj, s2.Traj, s3.Traj,
+            rs1.Traj, rs2.Traj, rs3.Traj,
+
+            r1.RewSum, r2.RewSum,
+            s1.RewSum, s2.RewSum, s3.RewSum,
+            rs1.RewSum, rs2.RewSum, rs3.RewSum,
+
+            r1.Steps, r2.Steps,
+            s1.Steps, s2.Steps, s3.Steps,
+            rs1.Steps, rs2.Steps, rs3.Steps,
+
+            r1.RewSum_seen, r2.RewSum_seen,
+            s1.RewSum_seen, s2.RewSum_seen, s3.RewSum_seen,
+            rs1.RewSum_seen, rs2.RewSum_seen, rs3.RewSum_seen,
+
+            r1.Steps_seen, r2.Steps_seen,
+            s1.Steps_seen, s2.Steps_seen, s3.Steps_seen,
+            rs1.Steps_seen, rs2.Steps_seen, rs3.Steps_seen,
+
+            r1.Q, r2.Q,
+            s1.Q, s2.Q, s3.Q,
+            rs1.Q, rs2.Q, rs3.Q,
+
+            v1.Traj, v2.Traj, v3.Traj, v4.Traj, v5.Traj)
+
+
+(r1_Traj, r2_Traj,
+ s1_Traj, s2_Traj, s3_Traj,
+ rs1_Traj, rs2_Traj, rs3_Traj,
+
+ r1_RewSum, r2_RewSum,
+ s1_RewSum, s2_RewSum, s3_RewSum,
+ rs1_RewSum, rs2_RewSum, rs3_RewSum,
+
+ r1_Steps, r2_Steps,
+ s1_Steps, s2_Steps, s3_Steps,
+ rs1_Steps, rs2_Steps, rs3_Steps,
+
+ r1_RewSum_seen, r2_RewSum_seen,
+ s1_RewSum_seen, s2_RewSum_seen, s3_RewSum_seen,
+ rs1_RewSum_seen, rs2_RewSum_seen, rs3_RewSum_seen,
+
+ r1_Steps_seen, r2_Steps_seen,
+ s1_Steps_seen, s2_Steps_seen, s3_Steps_seen,
+ rs1_Steps_seen, rs2_Steps_seen, rs3_Steps_seen,
+
+ r1_Q, r2_Q,
+ s1_Q, s2_Q, s3_Q,
+ rs1_Q, rs2_Q, rs3_Q,
+
+ v1_Traj, v2_Traj, v3_Traj, v4_Traj, v5_Traj) = env()
+
+with h5py.File(f'multi_agent_Q_learning_2r_3s_3rs.hdf5', "w") as f:
+    f.create_dataset('r1_trajectory', data=r1_Traj)
+    f.create_dataset('r1_reward', data=r1_RewSum)
+    f.create_dataset('r1_steps', data=r1_Steps)
+    f.create_dataset('r1_reward_seen', data=r1_RewSum_seen)
+    f.create_dataset('r1_steps_seen', data=r1_Steps_seen)
+    f.create_dataset('r1_Q', data=r1_Q)
+
+    f.create_dataset('r2_trajectory', data=r2_Traj)
+    f.create_dataset('r2_reward', data=r2_RewSum)
+    f.create_dataset('r2_steps', data=r2_Steps)
+    f.create_dataset('r2_reward_seen', data=r2_RewSum_seen)
+    f.create_dataset('r2_steps_seen', data=r2_Steps_seen)
+    f.create_dataset('r2_Q', data=r2_Q)
+
+    f.create_dataset('s1_trajectory', data=s1_Traj)
+    f.create_dataset('s1_reward', data=s1_RewSum)
+    f.create_dataset('s1_steps', data=s1_Steps)
+    f.create_dataset('s1_reward_seen', data=s1_RewSum_seen)
+    f.create_dataset('s1_steps_seen', data=s1_Steps_seen)
+    f.create_dataset('s1_Q', data=s1_Q)
+
+    f.create_dataset('s2_trajectory', data=s2_Traj)
+    f.create_dataset('s2_reward', data=s2_RewSum)
+    f.create_dataset('s2_steps', data=s2_Steps)
+    f.create_dataset('s2_reward_seen', data=s2_RewSum_seen)
+    f.create_dataset('s2_steps_seen', data=s2_Steps_seen)
+    f.create_dataset('s2_Q', data=s2_Q)
+
+    f.create_dataset('s3_trajectory', data=s3_Traj)
+    f.create_dataset('s3_reward', data=s3_RewSum)
+    f.create_dataset('s3_steps', data=s3_Steps)
+    f.create_dataset('s3_reward_seen', data=s3_RewSum_seen)
+    f.create_dataset('s3_steps_seen', data=s3_Steps_seen)
+    f.create_dataset('s3_Q', data=s3_Q)
+
+    f.create_dataset('rs1_trajectory', data=rs1_Traj)
+    f.create_dataset('rs1_reward', data=rs1_RewSum)
+    f.create_dataset('rs1_steps', data=rs1_Steps)
+    f.create_dataset('rs1_reward_seen', data=rs1_RewSum_seen)
+    f.create_dataset('rs1_steps_seen', data=rs1_Steps_seen)
+    f.create_dataset('rs1_Q', data=rs1_Q)
+
+    f.create_dataset('rs2_trajectory', data=rs2_Traj)
+    f.create_dataset('rs2_reward', data=rs2_RewSum)
+    f.create_dataset('rs2_steps', data=rs2_Steps)
+    f.create_dataset('rs2_reward_seen', data=rs2_RewSum_seen)
+    f.create_dataset('rs2_steps_seen', data=rs2_Steps_seen)
+    f.create_dataset('rs2_Q', data=rs2_Q)
+
+    f.create_dataset('rs3_trajectory', data=rs3_Traj)
+    f.create_dataset('rs3_reward', data=rs3_RewSum)
+    f.create_dataset('rs3_steps', data=rs3_Steps)
+    f.create_dataset('rs3_reward_seen', data=rs3_RewSum_seen)
+    f.create_dataset('rs3_steps_seen', data=rs3_Steps_seen)
+    f.create_dataset('rs3_Q', data=rs3_Q)
+
+    f.create_dataset('v1_trajectory', data=v1_Traj)
+    f.create_dataset('v2_trajectory', data=v2_Traj)
+    f.create_dataset('v3_trajectory', data=v3_Traj)
+    f.create_dataset('v4_trajectory', data=v4_Traj)
+    f.create_dataset('v5_trajectory', data=v5_Traj)

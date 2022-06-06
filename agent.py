@@ -16,6 +16,7 @@ class Agent:
 
         self.CanSeeIt = False
         self.Finish = False
+        self.First = True
         self.wereHere = np.ones((num_rows, num_cols))
         self.Speed = speed  # is the number of cells the agent can move in one time-step
 
@@ -23,8 +24,10 @@ class Agent:
         self.old_Pos = self.curr_Pos
 
         self.Traj = []  # Trajectory of the agent locations
-        self.RewHist = []  # Keeps track of the rewards in each step
-        self.RewHist_seen = []  # Keeps track of the rewards after receiving first data
+        self.RewHist = []
+        self.RewHist_seen = []
+        self.RewSum = []  # Keeps track of the rewards in each step
+        self.RewSum_seen = []  # Keeps track of the rewards after receiving first data
         self.Steps = []  # Keeps track of the steps in each step
         self.Steps_seen = []  # Keeps track of the steps after receiving first data
 
@@ -42,22 +45,11 @@ class Agent:
         self.curr_Sensation = [np.nan, np.nan]
         self.CanSeeIt = False
         self.Finish = False
+        self.First = True
         self.t_step_seen = 0
+        self.RewHist = []
+        self.RewHist_seen = []
         self.wereHere = np.ones_like(self.wereHere)
-
-    # def receive_info(self, their_sensation, our_distance):
-    #     if 'r' in self.Role:
-    #         self.their_Sensation = their_sensation
-    #         self.our_Distance = our_distance
-    #     else:
-    #         self.their_Sensation = [np.nan, np.nan]
-    #         self.our_Distance = [np.nan, np.nan]
-    #
-    # def send_info(self):
-    #     if 's' in self.Role:
-    #         return self.curr_Sensation
-    #     else:
-    #         return [np.nan, np.nan]
 
     def cell_marker(self, pos):
         self.wereHere[pos[0], pos[1]] = 0
