@@ -474,16 +474,7 @@ def env():
             s1.old_Pos = s1.curr_Pos
             s2.old_Pos = s2.curr_Pos
             s3.old_Pos = s3.curr_Pos
-            v1.victim_rescued([r1.old_Pos, r2.old_Pos,
-                               rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
-            v2.victim_rescued([r1.old_Pos, r2.old_Pos,
-                               rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
-            v3.victim_rescued([r1.old_Pos, r2.old_Pos,
-                               rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
-            v4.victim_rescued([r1.old_Pos, r2.old_Pos,
-                               rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
-            v5.victim_rescued([r1.old_Pos, r2.old_Pos,
-                               rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
+
             # Check to see if the victim rescued by the team
             # Keep track of the steps
             # Remove the victim from the list
@@ -494,7 +485,8 @@ def env():
                 eval_curr_sensations[:, v1.id] = False
                 v1.First = False
             elif not v1.Finish:
-
+                v1.victim_rescued([r1.old_Pos, r2.old_Pos,
+                                   rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v1.old_Pos = v1.curr_Pos
 
             if v2.Finish and v2.First:
@@ -503,7 +495,8 @@ def env():
                 eval_curr_sensations[:, v2.id] = False
                 v2.First = False
             elif not v2.Finish:
-
+                v2.victim_rescued([r1.old_Pos, r2.old_Pos,
+                                   rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v2.old_Pos = v2.curr_Pos
 
             if v3.Finish and v3.First:
@@ -512,7 +505,8 @@ def env():
                 eval_curr_sensations[:, v3.id] = False
                 v3.First = False
             elif not v3.Finish:
-
+                v3.victim_rescued([r1.old_Pos, r2.old_Pos,
+                                   rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v3.old_Pos = v3.curr_Pos
 
             if v4.Finish and v4.First:
@@ -521,7 +515,8 @@ def env():
                 eval_curr_sensations[:, v4.id] = False
                 v4.First = False
             elif not v4.Finish:
-
+                v4.victim_rescued([r1.old_Pos, r2.old_Pos,
+                                   rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v4.old_Pos = v4.curr_Pos
 
             if v5.Finish and v5.First:
@@ -530,7 +525,8 @@ def env():
                 eval_curr_sensations[:, v5.id] = False
                 v5.First = False
             elif not v5.Finish:
-
+                v5.victim_rescued([r1.old_Pos, r2.old_Pos,
+                                   rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v5.old_Pos = v5.curr_Pos
 
             rescue_flags = [r1.Finish, r2.Finish,
