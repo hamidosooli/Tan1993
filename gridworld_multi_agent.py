@@ -10,8 +10,8 @@ pygame.init()
 WIDTH = 800  # width of the environment (px)
 HEIGHT = 800  # height of the environment (px)
 TS = 10  # delay in msec
-Col_num = 20  # number of columns
-Row_num = 20  # number of rows
+Col_num = 40  # number of columns
+Row_num = 40  # number of rows
 
 # define colors
 bg_color = pg.Color(255, 255, 255)
@@ -142,6 +142,10 @@ def animate(rescuers_traj, rescuers_scouts_traj, scouts_traj, victims_traj,
             pg.display.update()
             time.sleep(wait_time)  # wait between the shows
 
+            for num in range(num_victims):
+                screen.blit(bg, (victims_stt[1, num] * (WIDTH // Col_num),
+                                 victims_stt[0, num] * (HEIGHT // Row_num)))
+
             for num in range(num_rescuers):
                 screen.blit(bg, (rescuers_stt[1, num] * (WIDTH // Col_num),
                                  rescuers_stt[0, num] * (HEIGHT // Row_num)))
@@ -178,18 +182,14 @@ def animate(rescuers_traj, rescuers_scouts_traj, scouts_traj, victims_traj,
                                        (WIDTH // Col_num), (HEIGHT // Row_num))
                         pg.draw.rect(screen, bg_color, rect)
 
-        for num in range(num_rescuers):
-            screen.blit(img_mdf_r, (rescuers_traj[-1][1, num] * (WIDTH // Col_num),
-                                    rescuers_traj[-1][0, num] * (HEIGHT // Row_num)))
-        for num in range(num_scouts):
-            screen.blit(img_mdf_scout, (scouts_traj[-1][1, num] * (WIDTH // Col_num),
-                                        scouts_traj[-1][0, num] * (HEIGHT // Row_num)))
-        for num in range(num_rescuers_scouts):
-            screen.blit(img_mdf_rescuer_scout, (rescuers_scouts_traj[-1][1, num] * (WIDTH // Col_num),
-                                                rescuers_scouts_traj[-1][0, num] * (HEIGHT // Row_num)))
-        for num in range(num_victims):
-            screen.blit(img_mdf_victim, (victims_traj[-1][1, num] * (WIDTH // Col_num),
-                                         victims_traj[-1][0, num] * (HEIGHT // Row_num)))
+        screen.blit(img_mdf_r, (rescuers_traj[-1][1] * (WIDTH // Col_num),
+                                rescuers_traj[-1][0] * (HEIGHT // Row_num)))
+        screen.blit(img_mdf_scout, (scouts_traj[-1][1] * (WIDTH // Col_num),
+                                    scouts_traj[-1][0] * (HEIGHT // Row_num)))
+        screen.blit(img_mdf_rescuer_scout, (rescuers_scouts_traj[-1][1] * (WIDTH // Col_num),
+                                            rescuers_scouts_traj[-1][0] * (HEIGHT // Row_num)))
+        screen.blit(img_mdf_victim, (victims_traj[-1][1] * (WIDTH // Col_num),
+                                     victims_traj[-1][0] * (HEIGHT // Row_num)))
 
         draw_grid(screen)
         pg.display.flip()

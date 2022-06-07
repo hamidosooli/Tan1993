@@ -9,8 +9,6 @@ class Network:
         self.num_victims = num_victims
 
     def pos2pos(self, pos_list):
-        adj_mat_loc = np.zeros((self.num_agents, self.num_agents, 2))
-        adj_mat_loc[:, :, 0] = adj_mat_loc[:, :, 1] = self.adj_mat
 
         pos_array = np.empty((self.num_agents, self.num_agents, 2))
         pos_array[:, :, 0] = np.tile(pos_list[:, 0].reshape(self.num_agents, 1), (1, self.num_agents))

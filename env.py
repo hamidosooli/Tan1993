@@ -14,13 +14,13 @@ LEFT = 3
 ACTIONS = [FORWARD, BACKWARD, RIGHT, LEFT]
 num_Acts = len(ACTIONS)
 
-NUM_EPISODES = 2000
+NUM_EPISODES = 200
 
 gamma = .9
 
 # Environment dimensions
-Row_num = 20
-Col_num = 20
+Row_num = 40
+Col_num = 40
 row_lim = Row_num - 1
 col_lim = Col_num - 1
 
@@ -33,6 +33,8 @@ adj_mat = np.array([[0, 0, 0, 0, 0,  0,  0,  1],
                     [0, 0, 0, 1, 0,  0,  1,  0],
                     [0, 0, 0, 0, 1,  0,  0,  0],
                     [0, 0, 0, 0, 0,  1,  0,  0]], dtype=float)
+
+wereHere = np.ones((Row_num, Col_num))
 
 
 # Transition function
@@ -115,6 +117,8 @@ def env():
         v4.reset([int(Row_num / 2) + 4, int(Col_num / 2) + 4])
         v5.reset([int(Row_num / 2) - 4, int(Col_num / 2) - 4])
 
+        wereHere = np.ones((Row_num, Col_num))
+
         t_step = 0
 
         while True:
@@ -142,16 +146,24 @@ def env():
                 rs3.t_step_seen += 1
 
             # Marking the formerly covered locations on exploration time
-            r1.cell_marker(r1.old_Pos)
-            r2.cell_marker(r2.old_Pos)
-
-            s1.cell_marker(s1.old_Pos)
-            s2.cell_marker(s2.old_Pos)
-            s3.cell_marker(s3.old_Pos)
-
-            rs1.cell_marker(rs1.old_Pos)
-            rs2.cell_marker(rs2.old_Pos)
-            rs3.cell_marker(rs3.old_Pos)
+            # r1.cell_marker(r1.old_Pos)
+            # r2.cell_marker(r2.old_Pos)
+            #
+            # s1.cell_marker(s1.old_Pos)
+            # s2.cell_marker(s2.old_Pos)
+            # s3.cell_marker(s3.old_Pos)
+            #
+            # rs1.cell_marker(rs1.old_Pos)
+            # rs2.cell_marker(rs2.old_Pos)
+            # rs3.cell_marker(rs3.old_Pos)
+            wereHere[r1.old_Pos[0], r1.old_Pos[1]] = 0
+            wereHere[r2.old_Pos[0], r2.old_Pos[1]] = 0
+            wereHere[s1.old_Pos[0], s1.old_Pos[1]] = 0
+            wereHere[s2.old_Pos[0], s2.old_Pos[1]] = 0
+            wereHere[s3.old_Pos[0], s3.old_Pos[1]] = 0
+            wereHere[rs1.old_Pos[0], rs1.old_Pos[1]] = 0
+            wereHere[rs2.old_Pos[0], rs2.old_Pos[1]] = 0
+            wereHere[rs3.old_Pos[0], rs3.old_Pos[1]] = 0
 
             # Keeping track of the rescue team positions
             r1.Traj.append(r1.old_Pos)
@@ -258,16 +270,16 @@ def env():
             rs3.curr_Pos = movement(rs3.old_Pos, rs3.action, rs3.Speed)
 
             # Prevent random exploration when receiving no data
-            r1.curr_Pos = r1.smart_move(r1.old_Index)
-            r2.curr_Pos = r2.smart_move(r2.old_Index)
+            r1.curr_Pos = r1.smart_move(r1.old_Index, wereHere)
+            r2.curr_Pos = r2.smart_move(r2.old_Index, wereHere)
 
-            s1.curr_Pos = s1.smart_move(s1.old_Index)
-            s2.curr_Pos = s2.smart_move(s2.old_Index)
-            s3.curr_Pos = s3.smart_move(s3.old_Index)
+            s1.curr_Pos = s1.smart_move(s1.old_Index, wereHere)
+            s2.curr_Pos = s2.smart_move(s2.old_Index, wereHere)
+            s3.curr_Pos = s3.smart_move(s3.old_Index, wereHere)
 
-            rs1.curr_Pos = rs1.smart_move(rs1.old_Index)
-            rs2.curr_Pos = rs2.smart_move(rs2.old_Index)
-            rs3.curr_Pos = rs3.smart_move(rs3.old_Index)
+            rs1.curr_Pos = rs1.smart_move(rs1.old_Index, wereHere)
+            rs2.curr_Pos = rs2.smart_move(rs2.old_Index, wereHere)
+            rs3.curr_Pos = rs3.smart_move(rs3.old_Index, wereHere)
 
             # Calculation of the distance between scouts and rescuers (after their movement)
             curr_scouts2rescuers = net.pos2pos(np.array([r1.curr_Pos, r2.curr_Pos,
@@ -331,16 +343,45 @@ def env():
             rs3.reward = reward_r(rs3.old_Sensation)
 
             # Keeping track of the rewards
-            r1.RewHist.append(r1.reward)
-            r2.RewHist.append(r2.reward)
+            if r1.CanSeeIt:
+                r1.RewHist_seen.append(r1.reward)
+            else:
+                r1.RewHist.append(r1.reward)
 
-            s1.RewHist.append(s1.reward)
-            s2.RewHist.append(s2.reward)
-            s3.RewHist.append(s3.reward)
+            if r2.CanSeeIt:
+                r2.RewHist_seen.append(r2.reward)
+            else:
+                r2.RewHist.append(r2.reward)
 
-            rs1.RewHist.append(rs1.reward)
-            rs2.RewHist.append(rs2.reward)
-            rs3.RewHist.append(rs3.reward)
+            if s1.CanSeeIt:
+                s1.RewHist_seen.append(s1.reward)
+            else:
+                s1.RewHist.append(s1.reward)
+
+            if s2.CanSeeIt:
+                s2.RewHist_seen.append(s2.reward)
+            else:
+                s2.RewHist.append(s2.reward)
+
+            if s3.CanSeeIt:
+                s3.RewHist_seen.append(s3.reward)
+            else:
+                s3.RewHist.append(s3.reward)
+
+            if rs1.CanSeeIt:
+                rs1.RewHist_seen.append(rs1.reward)
+            else:
+                rs1.RewHist.append(rs1.reward)
+
+            if rs2.CanSeeIt:
+                rs2.RewHist_seen.append(rs2.reward)
+            else:
+                rs2.RewHist.append(rs2.reward)
+
+            if rs3.CanSeeIt:
+                rs3.RewHist_seen.append(rs3.reward)
+            else:
+                rs3.RewHist.append(rs3.reward)
 
             # Actions for the victims
             v1.action = np.random.choice(ACTIONS)
@@ -376,6 +417,7 @@ def env():
                 r1.RewSum_seen.append(np.sum(r1.RewHist_seen))
                 adj_mat[:, r1.id] = 0
                 r1.First = False
+
             elif not r1.Finish:
                 r1.rescue_accomplished()
                 r1.old_Pos = r1.curr_Pos
@@ -387,6 +429,7 @@ def env():
                 r2.RewSum_seen.append(np.sum(r2.RewHist_seen))
                 adj_mat[:, r2.id] = 0
                 r2.First = False
+
             elif not r2.Finish:
                 r2.rescue_accomplished()
                 r2.old_Pos = r2.curr_Pos
@@ -398,6 +441,7 @@ def env():
                 rs1.RewSum_seen.append(np.sum(rs1.RewHist_seen))
                 adj_mat[:, rs1.id] = 0
                 rs1.First = False
+
             elif not rs1.Finish:
                 rs1.rescue_accomplished()
                 rs1.old_Pos = rs1.curr_Pos
@@ -409,6 +453,7 @@ def env():
                 rs2.RewSum_seen.append(np.sum(rs2.RewHist_seen))
                 adj_mat[:, rs2.id] = 0
                 rs2.First = False
+
             elif not rs2.Finish:
                 rs2.rescue_accomplished()
                 rs2.old_Pos = rs2.curr_Pos
@@ -420,6 +465,7 @@ def env():
                 rs3.RewSum_seen.append(np.sum(rs3.RewHist_seen))
                 adj_mat[:, rs3.id] = 0
                 rs3.First = False
+
             elif not rs3.Finish:
                 rs3.rescue_accomplished()
                 rs3.old_Pos = rs3.curr_Pos
@@ -428,7 +474,16 @@ def env():
             s1.old_Pos = s1.curr_Pos
             s2.old_Pos = s2.curr_Pos
             s3.old_Pos = s3.curr_Pos
-
+            v1.victim_rescued([r1.old_Pos, r2.old_Pos,
+                               rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
+            v2.victim_rescued([r1.old_Pos, r2.old_Pos,
+                               rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
+            v3.victim_rescued([r1.old_Pos, r2.old_Pos,
+                               rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
+            v4.victim_rescued([r1.old_Pos, r2.old_Pos,
+                               rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
+            v5.victim_rescued([r1.old_Pos, r2.old_Pos,
+                               rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
             # Check to see if the victim rescued by the team
             # Keep track of the steps
             # Remove the victim from the list
@@ -439,8 +494,7 @@ def env():
                 eval_curr_sensations[:, v1.id] = False
                 v1.First = False
             elif not v1.Finish:
-                v1.victim_rescued([r1.old_Pos, r2.old_Pos,
-                                   rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
+
                 v1.old_Pos = v1.curr_Pos
 
             if v2.Finish and v2.First:
@@ -449,8 +503,7 @@ def env():
                 eval_curr_sensations[:, v2.id] = False
                 v2.First = False
             elif not v2.Finish:
-                v2.victim_rescued([r1.old_Pos, r2.old_Pos,
-                                   rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
+
                 v2.old_Pos = v2.curr_Pos
 
             if v3.Finish and v3.First:
@@ -459,8 +512,7 @@ def env():
                 eval_curr_sensations[:, v3.id] = False
                 v3.First = False
             elif not v3.Finish:
-                v3.victim_rescued([r1.old_Pos, r2.old_Pos,
-                                   rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
+
                 v3.old_Pos = v3.curr_Pos
 
             if v4.Finish and v4.First:
@@ -469,8 +521,7 @@ def env():
                 eval_curr_sensations[:, v4.id] = False
                 v4.First = False
             elif not v4.Finish:
-                v4.victim_rescued([r1.old_Pos, r2.old_Pos,
-                                   rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
+
                 v4.old_Pos = v4.curr_Pos
 
             if v5.Finish and v5.First:
@@ -479,13 +530,11 @@ def env():
                 eval_curr_sensations[:, v5.id] = False
                 v5.First = False
             elif not v5.Finish:
-                v5.victim_rescued([r1.old_Pos, r2.old_Pos,
-                                   rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
+
                 v5.old_Pos = v5.curr_Pos
 
             rescue_flags = [r1.Finish, r2.Finish,
-                            rs1.Finish, rs2.Finish, rs3.Finish,
-                            v1.Finish, v2.Finish, v3.Finish, v4.Finish, v5.Finish]
+                            rs1.Finish, rs2.Finish, rs3.Finish]
 
             if all(rescue_flags):
 
@@ -498,7 +547,7 @@ def env():
                 s3.RewSum.append(np.sum(s3.RewHist))
                 s3.RewSum_seen.append(np.sum(s3.RewHist_seen))
 
-                print(f'In episode {eps + 1} of {NUM_EPISODES}, all of the victims were rescued in {t_step + 1} steps')
+                print(f'In episode {eps + 1} of {NUM_EPISODES}, all of the victims were rescued in {t_step} steps')
 
                 break
 

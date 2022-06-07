@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Agent:
-    def __init__(self, agent_id, role, vfd, max_vfd, speed, curr_pos, num_actions, num_rows, num_cols):
+    def __init__(self, agent_id, role, vfd, max_vfd, speed, pos, num_actions, num_rows, num_cols):
         self.Role = role  # can be 'r': rescuer, 's': scout, 'rs': rescuer and scout, 'v': victim
         self.id = agent_id  # an identification for the agent
         self.VisualField = vfd
@@ -20,8 +20,8 @@ class Agent:
         self.wereHere = np.ones((num_rows, num_cols))
         self.Speed = speed  # is the number of cells the agent can move in one time-step
 
-        self.curr_Pos = curr_pos
-        self.old_Pos = self.curr_Pos
+        self.curr_Pos = pos
+        self.old_Pos = pos
 
         self.Traj = []  # Trajectory of the agent locations
         self.RewHist = []
@@ -49,16 +49,17 @@ class Agent:
         self.t_step_seen = 0
         self.RewHist = []
         self.RewHist_seen = []
+        self.Traj = []
         self.wereHere = np.ones_like(self.wereHere)
 
     def cell_marker(self, pos):
         self.wereHere[pos[0], pos[1]] = 0
 
-    def smart_move(self, idx):
+    def smart_move(self, idx, wereHere):
 
         if idx == (2 * self.max_VisualField + 1) ** 2:
-            if len(np.argwhere(self.wereHere)) > 0:
-                for loc in np.argwhere(self.wereHere):
+            if len(np.argwhere(wereHere)) > 0:
+                for loc in np.argwhere(wereHere):
                     if np.sqrt((loc[0] - self.old_Pos[0]) ** 2 + (loc[1] - self.old_Pos[1]) ** 2) == 1:
                         self.curr_Pos = loc
                         break
@@ -118,11 +119,11 @@ class Agent:
         for pos in agents_pos_list:
 
             if pos[0] == self.old_Pos[0] and pos[1] == self.old_Pos[1]:
-
                 self.Finish = True
 
             else:
-
                 self.Finish = False
+
+        return self.Finish
 
 

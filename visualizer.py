@@ -112,7 +112,7 @@ with h5py.File(file_name, 'r') as f:
     plt.plot(np.asarray(f['rs3_steps_seen']))
 
     plt.xlabel('Number of episodes')
-    plt.ylabel('Number of steps from seeing the victim for the first time, until finishing the rescue mission')
+    plt.ylabel('Number of steps from seeing the victim for the first time to the end')
     plt.legend(['Rescuer 1', 'Rescuer 2',
                 'Scout 1', 'Scout 2', 'Scout 3',
                 'Rescuer/Scout 1', 'Rescuer/Scout 2', 'Rescuer/Scout 3'])
