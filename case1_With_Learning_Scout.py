@@ -111,7 +111,7 @@ def smart_move(were_here, pos, pos_prime):
     return pos_prime
 
 
-def rl_agent(beta=0.8):
+def rl_agent(beta=0.8, epsilon=1e-5):
     global can_see_it
     global default_sensation
     Q = np.zeros(((2 * Row_num + 1) ** 2 + 1, nA))
@@ -122,10 +122,12 @@ def rl_agent(beta=0.8):
     see_steps = []
     see_rewards = []
     eps = 0
-    for eps in range(NUM_EPISODES):
+    # for eps in range(NUM_EPISODES):
 
-    # while True:
-        # Q_hist = Q.copy()
+    while True:
+        eps += 1
+        hist_Q = Q.copy()
+        hist_Q_scout = Q_scout.copy()
 
         # eps += 1
         wereHere_hunter = np.ones((Row_num, Col_num))
@@ -157,8 +159,14 @@ def rl_agent(beta=0.8):
             T_scout.append(scout_pos)
             T_prey.append(prey_pos)
 
-            wereHere_hunter[hunter_pos[0], hunter_pos[1]] = 0
-            wereHere_scout[scout_pos[0], scout_pos[1]] = 0
+            wereHere_hunter[int(max(hunter_pos[0] - Hunter_VFD, 0)):
+                            int(min(Col_num, hunter_pos[0] + Hunter_VFD + 1)),
+                            int(max(hunter_pos[1] - Hunter_VFD, 0)):
+                            int(min(Col_num, hunter_pos[1] + Hunter_VFD + 1))] = 0
+            wereHere_scout[int(max(scout_pos[0] - Scout_VFD, 0)):
+                            int(min(Col_num, scout_pos[0] + Scout_VFD + 1)),
+                            int(max(scout_pos[1] - Scout_VFD, 0)):
+                            int(min(Col_num, scout_pos[1] + Scout_VFD + 1))] = 0
 
             scout2hunter = np.subtract(scout_pos, hunter_pos)
 
@@ -228,8 +236,8 @@ def rl_agent(beta=0.8):
             hunter_pos = hunter_pos_prime
             scout_pos = scout_pos_prime
 
-            # if t_step % 2 == 0:
-            prey_pos = prey_pos_prime
+            if t_step % 2 == 0:
+                prey_pos = prey_pos_prime
 
             if hunter_sensation == [0, 0]:
 
@@ -239,10 +247,13 @@ def rl_agent(beta=0.8):
                 rewards.append(sum(R))
                 see_rewards.append(sum(R_prime))
 
-                print(f'In episode {eps + 1} of {NUM_EPISODES}, the prey was captured in {t_step + 1} steps')
+                # print(f'In episode {eps + 1} of {NUM_EPISODES}, the prey was captured in {t_step + 1} steps')
+                print(f'In episode {eps}, the victim was rescued in {t_step + 1} steps')
 
                 break
-
+        if (np.abs(np.sum(Q - hist_Q) / (np.shape(Q)[0] * np.shape(Q)[1])) <= epsilon and
+            np.abs(np.sum(Q_scout - hist_Q_scout) / (np.shape(Q_scout)[0] * np.shape(Q_scout)[1])) <= epsilon):
+            break
     return T_hunter, T_scout, T_prey, A_hunter, A_scout, A_prey, rewards, steps, see_rewards, see_steps, Q
 
 

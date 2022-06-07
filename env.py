@@ -416,10 +416,18 @@ def env():
                 r1.RewSum.append(np.sum(r1.RewHist))
                 r1.RewSum_seen.append(np.sum(r1.RewHist_seen))
                 adj_mat[:, r1.id] = 0
+
                 r1.First = False
 
             elif not r1.Finish:
                 r1.rescue_accomplished()
+                # print(r1.Finish, '\n', r1.old_Pos, v1.old_Pos, v2.old_Pos, v3.old_Pos, v4.old_Pos, v5.old_Pos, '\n', 'others',
+                #       r1.curr_Pos, v1.curr_Pos, v2.curr_Pos, v3.curr_Pos, v4.curr_Pos, v5.curr_Pos)
+                v1.victim_rescued(old_raw_sensations[:, v1.id])
+                v2.victim_rescued(old_raw_sensations[:, v2.id])
+                v3.victim_rescued(old_raw_sensations[:, v3.id])
+                v4.victim_rescued(old_raw_sensations[:, v4.id])
+                v5.victim_rescued(old_raw_sensations[:, v5.id])
                 r1.old_Pos = r1.curr_Pos
 
             if r2.Finish and r2.First:
@@ -432,6 +440,11 @@ def env():
 
             elif not r2.Finish:
                 r2.rescue_accomplished()
+                v1.victim_rescued(old_raw_sensations[:, v1.id])
+                v2.victim_rescued(old_raw_sensations[:, v2.id])
+                v3.victim_rescued(old_raw_sensations[:, v3.id])
+                v4.victim_rescued(old_raw_sensations[:, v4.id])
+                v5.victim_rescued(old_raw_sensations[:, v5.id])
                 r2.old_Pos = r2.curr_Pos
 
             if rs1.Finish and rs1.First:
@@ -444,6 +457,11 @@ def env():
 
             elif not rs1.Finish:
                 rs1.rescue_accomplished()
+                v1.victim_rescued(old_raw_sensations[:, v1.id])
+                v2.victim_rescued(old_raw_sensations[:, v2.id])
+                v3.victim_rescued(old_raw_sensations[:, v3.id])
+                v4.victim_rescued(old_raw_sensations[:, v4.id])
+                v5.victim_rescued(old_raw_sensations[:, v5.id])
                 rs1.old_Pos = rs1.curr_Pos
 
             if rs2.Finish and rs2.First:
@@ -456,6 +474,11 @@ def env():
 
             elif not rs2.Finish:
                 rs2.rescue_accomplished()
+                v1.victim_rescued(old_raw_sensations[:, v1.id])
+                v2.victim_rescued(old_raw_sensations[:, v2.id])
+                v3.victim_rescued(old_raw_sensations[:, v3.id])
+                v4.victim_rescued(old_raw_sensations[:, v4.id])
+                v5.victim_rescued(old_raw_sensations[:, v5.id])
                 rs2.old_Pos = rs2.curr_Pos
 
             if rs3.Finish and rs3.First:
@@ -468,6 +491,11 @@ def env():
 
             elif not rs3.Finish:
                 rs3.rescue_accomplished()
+                v1.victim_rescued(old_raw_sensations[:, v1.id])
+                v2.victim_rescued(old_raw_sensations[:, v2.id])
+                v3.victim_rescued(old_raw_sensations[:, v3.id])
+                v4.victim_rescued(old_raw_sensations[:, v4.id])
+                v5.victim_rescued(old_raw_sensations[:, v5.id])
                 rs3.old_Pos = rs3.curr_Pos
 
             # moving the scouts
@@ -485,8 +513,6 @@ def env():
                 eval_curr_sensations[:, v1.id] = False
                 v1.First = False
             elif not v1.Finish:
-                v1.victim_rescued([r1.old_Pos, r2.old_Pos,
-                                   rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v1.old_Pos = v1.curr_Pos
 
             if v2.Finish and v2.First:
@@ -495,8 +521,6 @@ def env():
                 eval_curr_sensations[:, v2.id] = False
                 v2.First = False
             elif not v2.Finish:
-                v2.victim_rescued([r1.old_Pos, r2.old_Pos,
-                                   rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v2.old_Pos = v2.curr_Pos
 
             if v3.Finish and v3.First:
@@ -505,8 +529,6 @@ def env():
                 eval_curr_sensations[:, v3.id] = False
                 v3.First = False
             elif not v3.Finish:
-                v3.victim_rescued([r1.old_Pos, r2.old_Pos,
-                                   rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v3.old_Pos = v3.curr_Pos
 
             if v4.Finish and v4.First:
@@ -515,8 +537,6 @@ def env():
                 eval_curr_sensations[:, v4.id] = False
                 v4.First = False
             elif not v4.Finish:
-                v4.victim_rescued([r1.old_Pos, r2.old_Pos,
-                                   rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v4.old_Pos = v4.curr_Pos
 
             if v5.Finish and v5.First:
@@ -525,13 +545,11 @@ def env():
                 eval_curr_sensations[:, v5.id] = False
                 v5.First = False
             elif not v5.Finish:
-                v5.victim_rescued([r1.old_Pos, r2.old_Pos,
-                                   rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v5.old_Pos = v5.curr_Pos
 
-            rescue_flags = [r1.Finish, r2.Finish,
-                            rs1.Finish, rs2.Finish, rs3.Finish]
-
+            # rescue_flags = [r1.Finish, r2.Finish,
+            #                 rs1.Finish, rs2.Finish, rs3.Finish]
+            rescue_flags = [v1.Finish, v2.Finish, v3.Finish, v4.Finish, v5.Finish]
             if all(rescue_flags):
 
                 s1.RewSum.append(np.sum(s1.RewHist))

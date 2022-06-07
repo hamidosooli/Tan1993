@@ -106,7 +106,7 @@ class Agent:
 
     def rescue_accomplished(self):
 
-        if self.old_Sensation[0] == 0 and self.old_Sensation[0] == 0:
+        if self.old_Sensation[0] == 0 and self.old_Sensation[1] == 0:
             self.Finish = True
 
         else:
@@ -114,16 +114,16 @@ class Agent:
 
         return self.Finish
 
-    def victim_rescued(self, agents_pos_list):
+    def victim_rescued(self, agents_sensation_list):
 
-        for pos in agents_pos_list:
+        for sensation in agents_sensation_list:
 
-            if pos[0] == self.old_Pos[0] and pos[1] == self.old_Pos[1]:
+            if sensation[0] == 0 and sensation[1] == 0:
                 self.Finish = True
 
             else:
                 self.Finish = False
 
-        return self.Finish
+            return self.Finish
 
 
