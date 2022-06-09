@@ -10,8 +10,8 @@ pygame.init()
 WIDTH = 800  # width of the environment (px)
 HEIGHT = 800  # height of the environment (px)
 TS = 10  # delay in msec
-Col_num = 40  # number of columns
-Row_num = 40  # number of rows
+Col_num = 20  # number of columns
+Row_num = 20  # number of rows
 
 # define colors
 bg_color = pg.Color(255, 255, 255)
@@ -75,11 +75,13 @@ def animate(rescuers_traj, rescuers_scouts_traj, scouts_traj, victims_traj,
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 run = False
-
+        step = -1
+        list_victims = np.arange(num_victims).tolist()
         for rescuers_stt, scouts_stt, rescuers_scouts_stt, victims_stt in zip(np.moveaxis(rescuers_traj, 0, -1),
                                                                              np.moveaxis(scouts_traj, 0, -1),
                                                                              np.moveaxis(rescuers_scouts_traj, 0, -1),
                                                                              np.moveaxis(victims_traj, 0, -1)):
+            step += 1
             for num in range(num_rescuers):
                 # rescuer visual field depth
                 for j in range(int(max(rescuers_stt[1, num] - rescuers_vfd[num], 0)),
@@ -131,18 +133,20 @@ def animate(rescuers_traj, rescuers_scouts_traj, scouts_traj, victims_traj,
                             (rescuers_scouts_stt[1, num] * (WIDTH // Col_num),
                              rescuers_scouts_stt[0, num] * (HEIGHT // Row_num)))
 
-            for num in range(num_victims):
+            for num in list_victims:
                 screen.blit(img_mdf_victim, (victims_stt[1, num] * (WIDTH // Col_num),
                                              victims_stt[0, num] * (HEIGHT // Row_num)))
                 screen.blit(font.render(str(num + 1), True, (0, 0, 0)),
                             (victims_stt[1, num] * (WIDTH // Col_num), victims_stt[0, num] * (HEIGHT // Row_num)))
-
+                # if step >= 1 and (victims_stt[:, num][0] == victims_history[:, num][0] and
+                #                   victims_stt[:, num][1] == victims_history[:, num][1]):
+                #     list_victims.remove(num)
             draw_grid(screen)
             pg.display.flip()
             pg.display.update()
             time.sleep(wait_time)  # wait between the shows
 
-            for num in range(num_victims):
+            for num in list_victims:
                 screen.blit(bg, (victims_stt[1, num] * (WIDTH // Col_num),
                                  victims_stt[0, num] * (HEIGHT // Row_num)))
 
@@ -181,7 +185,7 @@ def animate(rescuers_traj, rescuers_scouts_traj, scouts_traj, victims_traj,
                         rect = pg.Rect(j * (WIDTH // Col_num), i * (HEIGHT // Row_num),
                                        (WIDTH // Col_num), (HEIGHT // Row_num))
                         pg.draw.rect(screen, bg_color, rect)
-
+            victims_history = victims_stt
         screen.blit(img_mdf_r, (rescuers_traj[-1][1] * (WIDTH // Col_num),
                                 rescuers_traj[-1][0] * (HEIGHT // Row_num)))
         screen.blit(img_mdf_scout, (scouts_traj[-1][1] * (WIDTH // Col_num),

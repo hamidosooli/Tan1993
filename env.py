@@ -19,8 +19,8 @@ NUM_EPISODES = 200
 gamma = .9
 
 # Environment dimensions
-Row_num = 40
-Col_num = 40
+Row_num = 20
+Col_num = 20
 row_lim = Row_num - 1
 col_lim = Col_num - 1
 
@@ -270,16 +270,16 @@ def env():
             rs3.curr_Pos = movement(rs3.old_Pos, rs3.action, rs3.Speed)
 
             # Prevent random exploration when receiving no data
-            r1.curr_Pos = r1.smart_move(r1.old_Index, wereHere)
-            r2.curr_Pos = r2.smart_move(r2.old_Index, wereHere)
-
-            s1.curr_Pos = s1.smart_move(s1.old_Index, wereHere)
-            s2.curr_Pos = s2.smart_move(s2.old_Index, wereHere)
-            s3.curr_Pos = s3.smart_move(s3.old_Index, wereHere)
-
-            rs1.curr_Pos = rs1.smart_move(rs1.old_Index, wereHere)
-            rs2.curr_Pos = rs2.smart_move(rs2.old_Index, wereHere)
-            rs3.curr_Pos = rs3.smart_move(rs3.old_Index, wereHere)
+            # r1.curr_Pos = r1.smart_move(r1.old_Index, wereHere)
+            # r2.curr_Pos = r2.smart_move(r2.old_Index, wereHere)
+            #
+            # s1.curr_Pos = s1.smart_move(s1.old_Index, wereHere)
+            # s2.curr_Pos = s2.smart_move(s2.old_Index, wereHere)
+            # s3.curr_Pos = s3.smart_move(s3.old_Index, wereHere)
+            #
+            # rs1.curr_Pos = rs1.smart_move(rs1.old_Index, wereHere)
+            # rs2.curr_Pos = rs2.smart_move(rs2.old_Index, wereHere)
+            # rs3.curr_Pos = rs3.smart_move(rs3.old_Index, wereHere)
 
             # Calculation of the distance between scouts and rescuers (after their movement)
             curr_scouts2rescuers = net.pos2pos(np.array([r1.curr_Pos, r2.curr_Pos,
@@ -297,6 +297,11 @@ def env():
                                                          s1.VisualField, s2.VisualField, s3.VisualField,
                                                          rs1.VisualField, rs2.VisualField, rs3.VisualField]),
                                                curr_raw_sensations)
+
+            for v_id, v_finish in enumerate([v1.Finish, v2.Finish, v3.Finish, v4.Finish, v5.Finish]):
+                if v_finish:
+                    eval_old_sensations[:, v_id] = False
+                    eval_curr_sensations[:, v_id] = False
 
             # Calculation of the new sensations for the rescue team (after their movement)
             r1.curr_Sensation = r1.update_sensation(curr_raw_sensations, eval_curr_sensations,
@@ -408,7 +413,11 @@ def env():
             rs1.Q = q_learning(rs1.Q, rs1.old_Index, rs1.curr_Index, rs1.reward, rs1.action, alpha=0.8)
             rs2.Q = q_learning(rs2.Q, rs2.old_Index, rs2.curr_Index, rs2.reward, rs2.action, alpha=0.8)
             rs3.Q = q_learning(rs3.Q, rs3.old_Index, rs3.curr_Index, rs3.reward, rs3.action, alpha=0.8)
-
+            # print(r1.Finish, r2.Finish, rs1.Finish, rs2.Finish, rs3.Finish)
+            # print('//////////////////////////////////////////////////// \n',
+            #       v1.Finish, v2.Finish, v3.Finish, v4.Finish, v5.Finish)
+            # print('//////////////////////////////////////////////////// \n',
+            #       adj_mat)
             # Check to see the team rescued any victim
             if r1.Finish and r1.First:
                 r1.Steps.append(t_step)
@@ -421,14 +430,15 @@ def env():
 
             elif not r1.Finish:
                 r1.rescue_accomplished()
-                # print(r1.Finish, '\n', r1.old_Pos, v1.old_Pos, v2.old_Pos, v3.old_Pos, v4.old_Pos, v5.old_Pos, '\n', 'others',
-                #       r1.curr_Pos, v1.curr_Pos, v2.curr_Pos, v3.curr_Pos, v4.curr_Pos, v5.curr_Pos)
-                v1.victim_rescued(old_raw_sensations[:, v1.id])
-                v2.victim_rescued(old_raw_sensations[:, v2.id])
-                v3.victim_rescued(old_raw_sensations[:, v3.id])
-                v4.victim_rescued(old_raw_sensations[:, v4.id])
-                v5.victim_rescued(old_raw_sensations[:, v5.id])
-                r1.old_Pos = r1.curr_Pos
+                # print(r1.Finish, '\n', r1.old_Pos, v1.old_Pos, v2.old_Pos, v3.old_Pos, v4.old_Pos, v5.old_Pos, '\n',
+                #       'others',
+                #       r1.curr_Pos, v1.curr_Pos, v2.curr_Pos, v3.curr_Pos, v4.curr_Pos, v5.curr_Pos, '\n',
+                #       v1.Finish, v2.Finish, v3.Finish, v4.Finish, v5.Finish)
+                # print('//////////////////////////////////////////////////// \n',
+                #       eval_old_sensations, '//////////////////////////////////////////////////// \n',
+                #       eval_curr_sensations)
+                if not r1.Finish:
+                    r1.old_Pos = r1.curr_Pos
 
             if r2.Finish and r2.First:
                 r2.Steps.append(t_step)
@@ -440,12 +450,8 @@ def env():
 
             elif not r2.Finish:
                 r2.rescue_accomplished()
-                v1.victim_rescued(old_raw_sensations[:, v1.id])
-                v2.victim_rescued(old_raw_sensations[:, v2.id])
-                v3.victim_rescued(old_raw_sensations[:, v3.id])
-                v4.victim_rescued(old_raw_sensations[:, v4.id])
-                v5.victim_rescued(old_raw_sensations[:, v5.id])
-                r2.old_Pos = r2.curr_Pos
+                if not r2.Finish:
+                    r2.old_Pos = r2.curr_Pos
 
             if rs1.Finish and rs1.First:
                 rs1.Steps.append(t_step)
@@ -457,12 +463,8 @@ def env():
 
             elif not rs1.Finish:
                 rs1.rescue_accomplished()
-                v1.victim_rescued(old_raw_sensations[:, v1.id])
-                v2.victim_rescued(old_raw_sensations[:, v2.id])
-                v3.victim_rescued(old_raw_sensations[:, v3.id])
-                v4.victim_rescued(old_raw_sensations[:, v4.id])
-                v5.victim_rescued(old_raw_sensations[:, v5.id])
-                rs1.old_Pos = rs1.curr_Pos
+                if not rs1.Finish:
+                    rs1.old_Pos = rs1.curr_Pos
 
             if rs2.Finish and rs2.First:
                 rs2.Steps.append(t_step)
@@ -474,12 +476,8 @@ def env():
 
             elif not rs2.Finish:
                 rs2.rescue_accomplished()
-                v1.victim_rescued(old_raw_sensations[:, v1.id])
-                v2.victim_rescued(old_raw_sensations[:, v2.id])
-                v3.victim_rescued(old_raw_sensations[:, v3.id])
-                v4.victim_rescued(old_raw_sensations[:, v4.id])
-                v5.victim_rescued(old_raw_sensations[:, v5.id])
-                rs2.old_Pos = rs2.curr_Pos
+                if not rs2.Finish:
+                    rs2.old_Pos = rs2.curr_Pos
 
             if rs3.Finish and rs3.First:
                 rs3.Steps.append(t_step)
@@ -491,12 +489,8 @@ def env():
 
             elif not rs3.Finish:
                 rs3.rescue_accomplished()
-                v1.victim_rescued(old_raw_sensations[:, v1.id])
-                v2.victim_rescued(old_raw_sensations[:, v2.id])
-                v3.victim_rescued(old_raw_sensations[:, v3.id])
-                v4.victim_rescued(old_raw_sensations[:, v4.id])
-                v5.victim_rescued(old_raw_sensations[:, v5.id])
-                rs3.old_Pos = rs3.curr_Pos
+                if not rs3.Finish:
+                    rs3.old_Pos = rs3.curr_Pos
 
             # moving the scouts
             s1.old_Pos = s1.curr_Pos
@@ -509,47 +503,46 @@ def env():
             # Update the victims position
             if v1.Finish and v1.First:
                 v1.Steps.append(t_step)
-                eval_old_sensations[:, v1.id] = False
-                eval_curr_sensations[:, v1.id] = False
+
                 v1.First = False
             elif not v1.Finish:
+                v1.victim_rescued([r1.old_Pos, r2.old_Pos, rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v1.old_Pos = v1.curr_Pos
 
             if v2.Finish and v2.First:
                 v2.Steps.append(t_step)
-                eval_old_sensations[:, v2.id] = False
-                eval_curr_sensations[:, v2.id] = False
+
                 v2.First = False
             elif not v2.Finish:
+                v2.victim_rescued([r1.old_Pos, r2.old_Pos, rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v2.old_Pos = v2.curr_Pos
 
             if v3.Finish and v3.First:
                 v3.Steps.append(t_step)
-                eval_old_sensations[:, v3.id] = False
-                eval_curr_sensations[:, v3.id] = False
                 v3.First = False
             elif not v3.Finish:
+                v3.victim_rescued([r1.old_Pos, r2.old_Pos, rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v3.old_Pos = v3.curr_Pos
 
             if v4.Finish and v4.First:
                 v4.Steps.append(t_step)
-                eval_old_sensations[:, v4.id] = False
-                eval_curr_sensations[:, v4.id] = False
+
                 v4.First = False
             elif not v4.Finish:
+                v4.victim_rescued([r1.old_Pos, r2.old_Pos, rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v4.old_Pos = v4.curr_Pos
 
             if v5.Finish and v5.First:
                 v5.Steps.append(t_step)
-                eval_old_sensations[:, v5.id] = False
-                eval_curr_sensations[:, v5.id] = False
+
                 v5.First = False
             elif not v5.Finish:
+                v5.victim_rescued([r1.old_Pos, r2.old_Pos, rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
                 v5.old_Pos = v5.curr_Pos
-
-            # rescue_flags = [r1.Finish, r2.Finish,
-            #                 rs1.Finish, rs2.Finish, rs3.Finish]
-            rescue_flags = [v1.Finish, v2.Finish, v3.Finish, v4.Finish, v5.Finish]
+            # print(v1.Finish, v2.Finish, v3.Finish, v4.Finish, v5.Finish, '\n', 'others', r1.Finish, r2.Finish,
+            #                        rs1.Finish, rs2.Finish, rs3.Finish)
+            rescue_flags = [r1.Finish, r2.Finish,
+                            rs1.Finish, rs2.Finish, rs3.Finish]
             if all(rescue_flags):
 
                 s1.RewSum.append(np.sum(s1.RewHist))

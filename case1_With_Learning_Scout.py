@@ -126,8 +126,7 @@ def rl_agent(beta=0.8, epsilon=1e-5):
 
     while True:
         eps += 1
-        hist_Q = Q.copy()
-        hist_Q_scout = Q_scout.copy()
+
 
         # eps += 1
         wereHere_hunter = np.ones((Row_num, Col_num))
@@ -154,6 +153,8 @@ def rl_agent(beta=0.8, epsilon=1e-5):
         t_step = 0
         see_t_step = 0
         while True:
+            hist_Q = Q.copy()
+            hist_Q_scout = Q_scout.copy()
             t_step += 1
             T_hunter.append(hunter_pos)
             T_scout.append(scout_pos)
@@ -178,15 +179,15 @@ def rl_agent(beta=0.8, epsilon=1e-5):
 
             idx = sensation2index(hunter_sensation, Row_num, can_see_it)
 
-            hunter_probs = Boltzmann(Q[idx, :])
-            hunter_action = np.random.choice(ACTIONS, p=hunter_probs)
-            # hunter_action = eps_greedy(Q[idx, :], ACTIONS)
+            # hunter_probs = Boltzmann(Q[idx, :])
+            # hunter_action = np.random.choice(ACTIONS, p=hunter_probs)
+            hunter_action = eps_greedy(Q[idx, :], ACTIONS)
 
             idx_scout = sensation2index(scout_sensation, Scout_VFD, can_see_it_scout)
 
-            scout_probs = Boltzmann(Q_scout[idx_scout, :])
-            scout_action = np.random.choice(ACTIONS, p=scout_probs)
-            # scout_action = eps_greedy(Q_scout[idx_scout, :], ACTIONS)
+            # scout_probs = Boltzmann(Q_scout[idx_scout, :])
+            # scout_action = np.random.choice(ACTIONS, p=scout_probs)
+            scout_action = eps_greedy(Q_scout[idx_scout, :], ACTIONS)
 
             prey_action = np.random.choice(ACTIONS)
 
@@ -236,10 +237,10 @@ def rl_agent(beta=0.8, epsilon=1e-5):
             hunter_pos = hunter_pos_prime
             scout_pos = scout_pos_prime
 
-            if t_step % 2 == 0:
-                prey_pos = prey_pos_prime
+            # if t_step % 2 == 0:
+            prey_pos = prey_pos_prime
 
-            if hunter_sensation == [0, 0]:
+            if hunter_sensation == [0, 0] and scout_sensation == [0, 0]:
 
                 steps.append(t_step+1)
                 see_steps.append(see_t_step+1)

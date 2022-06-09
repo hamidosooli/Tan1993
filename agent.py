@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Agent:
-    def __init__(self, agent_id, role, vfd, max_vfd, speed, pos, num_actions, num_rows, num_cols):
+    def __init__(self, agent_id, role, vfd, max_vfd, speed, init_pos, num_actions, num_rows, num_cols):
         self.Role = role  # can be 'r': rescuer, 's': scout, 'rs': rescuer and scout, 'v': victim
         self.id = agent_id  # an identification for the agent
         self.VisualField = vfd
@@ -20,8 +20,9 @@ class Agent:
         self.wereHere = np.ones((num_rows, num_cols))
         self.Speed = speed  # is the number of cells the agent can move in one time-step
 
-        self.curr_Pos = pos
-        self.old_Pos = pos
+        self.init_pos = init_pos
+        self.curr_Pos = self.init_pos
+        self.old_Pos = self.curr_Pos
 
         self.Traj = []  # Trajectory of the agent locations
         self.RewHist = []
@@ -37,10 +38,11 @@ class Agent:
         self.reward = None
         self.probs = np.nan
         self.Q = np.zeros(((2 * self.max_VisualField + 1) ** 2 + 1, self.num_actions))
+        self.Q_hist = self.Q
 
-    def reset(self, pos):
-        self.old_Pos = pos
-        self.curr_Pos = pos
+    def reset(self):
+        self.old_Pos = self.init_pos
+        self.curr_Pos = self.init_pos
         self.old_Sensation = [np.nan, np.nan]
         self.curr_Sensation = [np.nan, np.nan]
         self.CanSeeIt = False
@@ -105,25 +107,10 @@ class Agent:
         return int(index)
 
     def rescue_accomplished(self):
-
         if self.old_Sensation[0] == 0 and self.old_Sensation[1] == 0:
             self.Finish = True
 
-        else:
-            self.Finish = False
-
-        return self.Finish
-
-    def victim_rescued(self, agents_sensation_list):
-
-        for sensation in agents_sensation_list:
-
-            if sensation[0] == 0 and sensation[1] == 0:
+    def victim_rescued(self, rescuers_pos_list):
+        for rescuer_pos in rescuers_pos_list:
+            if rescuer_pos[0] == self.old_Pos[0] and rescuer_pos[1] == self.old_Pos[1]:
                 self.Finish = True
-
-            else:
-                self.Finish = False
-
-            return self.Finish
-
-
