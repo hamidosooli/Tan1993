@@ -106,7 +106,7 @@ def env(accuracy=0.01):
         for victim in victims:
             victim.reset()
 
-        t_step = 0
+        t_step = -1
 
         while True:
 
@@ -142,8 +142,7 @@ def env(accuracy=0.01):
             old_scouts2rescuers = net.pos2pos(rescue_team_old_pos_list)
 
             # Calculation of the raw sensations for the rescue team
-            old_raw_sensations = net.sensed_pos(victims_old_pos_list,
-                                                rescue_team_old_pos_list)
+            old_raw_sensations = net.sensed_pos(victims_old_pos_list, rescue_team_old_pos_list)
 
             # Check to see if the sensations are in the agents visual fields
             eval_old_sensations = net.is_seen(rescue_team_VFD_list,
@@ -183,6 +182,7 @@ def env(accuracy=0.01):
                     eval_curr_sensations[:, victim.id] = False
 
             # Calculation of the new sensations for the rescue team (after their movement)
+            rescue_flags = []
             for agent in rescue_team:
                 agent.curr_Sensation = agent.update_sensation(curr_raw_sensations, eval_curr_sensations,
                                                               curr_scouts2rescuers, net.adj_mat, adj_mat)
@@ -193,15 +193,16 @@ def env(accuracy=0.01):
                 agent.reward = reward_func(agent.old_Sensation)
 
                 # Keeping track of the rewards
-                if agent.CanSeeIt:
-                    agent.RewHist_seen.append(agent.reward)
-                else:
+                if not agent.Finish:
                     agent.RewHist.append(agent.reward)
+                    if agent.CanSeeIt:
+                        agent.RewHist_seen.append(agent.reward)
 
                 # Q learning for the rescue team
                 agent.Q = q_learning(agent.Q, agent.old_Index, agent.curr_Index, agent.reward, agent.action, alpha=0.8)
 
-                # Check to see the team rescued any victim
+                rescue_flags.append(agent.Finish)
+                # Check to see if the team rescued any victim
                 if agent.Finish and agent.First:
                     agent.Steps.append(t_step)
                     agent.Steps_seen.append(agent.t_step_seen)
@@ -212,8 +213,6 @@ def env(accuracy=0.01):
 
                 elif not agent.Finish:
                     agent.rescue_accomplished()
-                    if not agent.Finish:
-                        agent.old_Pos = agent.curr_Pos
 
             for victim in victims:
                 # Actions for the victims
@@ -221,8 +220,6 @@ def env(accuracy=0.01):
                 # Victims next positions
                 victim.curr_Pos = movement(victim.old_Pos, victim.action, victim.Speed)
 
-            rescue_flags = []
-            for victim in victims:
                 # Check to see if the victim rescued by the team
                 # Keep track of the steps
                 # Remove the victim from the list
@@ -233,19 +230,11 @@ def env(accuracy=0.01):
                     victim.First = False
                 elif not victim.Finish:
                     victim.victim_rescued(rescue_team_old_pos_list)
-                    victim.old_Pos = victim.curr_Pos
-
-                rescue_flags.append(victim.Finish)
 
             if all(rescue_flags):
-
-                for agent in rescue_team:
-                    agent.RewSum.append(np.sum(agent.RewHist))
-                    agent.RewSum_seen.append(np.sum(agent.RewHist_seen))
-
                 print(f'In episode {eps}, all of the victims were rescued in {t_step} steps')
-
                 break
+
         convergence_flag = []
         for agent in rescue_team:
             convergence_flag.append(np.abs(np.sum(agent.Q - agent.Q_hist) /
@@ -280,7 +269,7 @@ def env(accuracy=0.01):
 (rescue_team_Traj,
  rescue_team_RewSum, rescue_team_Steps,
  rescue_team_RewSum_seen, rescue_team_Steps_seen,
- rescue_team_Q, victims_Traj, rescue_team_VFD_list) = env(accuracy=1e-6)
+ rescue_team_Q, victims_Traj, rescue_team_VFD_list) = env(accuracy=1e-7)
 
 with h5py.File('multi_agent_Q_learning.hdf5', 'w') as f:
     for idx, traj in enumerate(rescue_team_Traj):
@@ -297,5 +286,5 @@ with h5py.File('multi_agent_Q_learning.hdf5', 'w') as f:
         f.create_dataset(f'RS{idx}_Q', data=q)
     for idx, victim_traj in enumerate(victims_Traj):
         f.create_dataset(f'victim{idx}_trajectory', data=victim_traj)
-    f.create_dataset('victims_num', data=len(victims_Traj))
+    f.create_dataset('victims_num', data=[len(victims_Traj)])
     f.create_dataset('RS_VFD', data=rescue_team_VFD_list)

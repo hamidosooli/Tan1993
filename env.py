@@ -14,7 +14,7 @@ LEFT = 3
 ACTIONS = [FORWARD, BACKWARD, RIGHT, LEFT]
 num_Acts = len(ACTIONS)
 
-NUM_EPISODES = 200
+NUM_EPISODES = 2000
 
 gamma = .9
 
@@ -100,22 +100,22 @@ def env():
 
     for eps in range(NUM_EPISODES):
         # Reset the agents flags, positions, etc
-        r1.reset([0, 0])
-        r2.reset([0, col_lim])
+        r1.reset()
+        r2.reset()
 
-        s1.reset([0, int(Col_num/2)])
-        s2.reset([int(Row_num/2), 0])
-        s3.reset([int(Row_num/2), col_lim])
+        s1.reset()
+        s2.reset()
+        s3.reset()
 
-        rs1.reset([row_lim, 0])
-        rs2.reset([row_lim, int(Col_num/2)])
-        rs3.reset([row_lim, col_lim])
+        rs1.reset()
+        rs2.reset()
+        rs3.reset()
 
-        v1.reset([int(Row_num / 2), int(Col_num/2)])
-        v2.reset([int(Row_num / 2) + 2, int(Col_num / 2) + 2])
-        v3.reset([int(Row_num / 2) - 2, int(Col_num / 2) - 2])
-        v4.reset([int(Row_num / 2) + 4, int(Col_num / 2) + 4])
-        v5.reset([int(Row_num / 2) - 4, int(Col_num / 2) - 4])
+        v1.reset()
+        v2.reset()
+        v3.reset()
+        v4.reset()
+        v5.reset()
 
         wereHere = np.ones((Row_num, Col_num))
 
@@ -437,8 +437,6 @@ def env():
                 # print('//////////////////////////////////////////////////// \n',
                 #       eval_old_sensations, '//////////////////////////////////////////////////// \n',
                 #       eval_curr_sensations)
-                if not r1.Finish:
-                    r1.old_Pos = r1.curr_Pos
 
             if r2.Finish and r2.First:
                 r2.Steps.append(t_step)
@@ -450,8 +448,6 @@ def env():
 
             elif not r2.Finish:
                 r2.rescue_accomplished()
-                if not r2.Finish:
-                    r2.old_Pos = r2.curr_Pos
 
             if rs1.Finish and rs1.First:
                 rs1.Steps.append(t_step)
@@ -463,8 +459,6 @@ def env():
 
             elif not rs1.Finish:
                 rs1.rescue_accomplished()
-                if not rs1.Finish:
-                    rs1.old_Pos = rs1.curr_Pos
 
             if rs2.Finish and rs2.First:
                 rs2.Steps.append(t_step)
@@ -476,8 +470,6 @@ def env():
 
             elif not rs2.Finish:
                 rs2.rescue_accomplished()
-                if not rs2.Finish:
-                    rs2.old_Pos = rs2.curr_Pos
 
             if rs3.Finish and rs3.First:
                 rs3.Steps.append(t_step)
@@ -489,8 +481,6 @@ def env():
 
             elif not rs3.Finish:
                 rs3.rescue_accomplished()
-                if not rs3.Finish:
-                    rs3.old_Pos = rs3.curr_Pos
 
             # moving the scouts
             s1.old_Pos = s1.curr_Pos
@@ -507,7 +497,6 @@ def env():
                 v1.First = False
             elif not v1.Finish:
                 v1.victim_rescued([r1.old_Pos, r2.old_Pos, rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
-                v1.old_Pos = v1.curr_Pos
 
             if v2.Finish and v2.First:
                 v2.Steps.append(t_step)
@@ -515,14 +504,12 @@ def env():
                 v2.First = False
             elif not v2.Finish:
                 v2.victim_rescued([r1.old_Pos, r2.old_Pos, rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
-                v2.old_Pos = v2.curr_Pos
 
             if v3.Finish and v3.First:
                 v3.Steps.append(t_step)
                 v3.First = False
             elif not v3.Finish:
                 v3.victim_rescued([r1.old_Pos, r2.old_Pos, rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
-                v3.old_Pos = v3.curr_Pos
 
             if v4.Finish and v4.First:
                 v4.Steps.append(t_step)
@@ -530,7 +517,6 @@ def env():
                 v4.First = False
             elif not v4.Finish:
                 v4.victim_rescued([r1.old_Pos, r2.old_Pos, rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
-                v4.old_Pos = v4.curr_Pos
 
             if v5.Finish and v5.First:
                 v5.Steps.append(t_step)
@@ -538,7 +524,6 @@ def env():
                 v5.First = False
             elif not v5.Finish:
                 v5.victim_rescued([r1.old_Pos, r2.old_Pos, rs1.old_Pos, rs2.old_Pos, rs3.old_Pos])
-                v5.old_Pos = v5.curr_Pos
             # print(v1.Finish, v2.Finish, v3.Finish, v4.Finish, v5.Finish, '\n', 'others', r1.Finish, r2.Finish,
             #                        rs1.Finish, rs2.Finish, rs3.Finish)
             rescue_flags = [r1.Finish, r2.Finish,

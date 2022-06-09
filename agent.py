@@ -109,8 +109,12 @@ class Agent:
     def rescue_accomplished(self):
         if self.old_Sensation[0] == 0 and self.old_Sensation[1] == 0:
             self.Finish = True
+        if not self.Finish:
+            self.old_Pos = self.curr_Pos
 
     def victim_rescued(self, rescuers_pos_list):
         for rescuer_pos in rescuers_pos_list:
             if rescuer_pos[0] == self.old_Pos[0] and rescuer_pos[1] == self.old_Pos[1]:
                 self.Finish = True
+        if not self.Finish:
+            self.old_Pos = self.curr_Pos
