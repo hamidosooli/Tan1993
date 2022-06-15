@@ -48,62 +48,6 @@ def draw_grid(scr):
             pg.draw.rect(scr, bg_color, rect, 1)
 
 
-class Agent:
-    '''the agent class '''
-
-    def __init__(self, scr):
-        self.w = WIDTH // (Row_num)
-        self.h = HEIGHT // (Col_num)
-        self.x1 = 0
-        self.y1 = HEIGHT - self.h
-
-        self.x2 = 0
-        self.y2 = HEIGHT - self.h
-        self.scr = scr
-        self.my_rect = pg.Rect((self.x1, self.y1), (self.w, self.h))
-        self.BOX_IS_FULL = True
-        self.FIRST_TIME = True
-
-    def reward(self, loc):
-        if loc[1] == goal_pos_x1 and loc[0] == goal_pos_y1 and self.BOX_IS_FULL:
-            return 100  # goal reward
-        if loc[1] == goal_pos_x2 and loc[0] == goal_pos_y2 and self.BOX_IS_FULL:
-            return 100  # goal reward
-        else:
-            return -1  # decreasing battery level
-
-    def show(self, color):
-        self.my_rect = pg.Rect((self.x1, self.y1), (self.w, self.h))
-        pg.draw.rect(self.scr, color, self.my_rect)
-
-    def h_move_valid(self, a1, a2):
-        '''checking for the validity of moves'''
-        if 0 <= self.x1 + a1 < WIDTH and 0 <= self.x2 + a2 < WIDTH:
-            return True
-        else:
-            return False
-
-    def v_move_valid(self, a1, a2):
-        if 0 <= self.y1 + a1 < HEIGHT and 0 <= self.y2 + a2 < HEIGHT:
-            return True
-        else:
-            return False
-
-    def h_move(self, a1, a2):
-        '''move the agent'''
-        if self.h_move_valid(a1, a2):
-            self.x1 += a1
-            self.x2 += a2
-            self.show(bg_color)
-
-    def v_move(self, a1, a2):
-        '''move the agent'''
-        if self.v_move_valid(a1, a2):
-            self.y1 += a1
-            self.y2 += a2
-            self.show(bg_color)
-
-
 def animate(rescuers_traj, scouts_traj, victim_traj, rescuer_vfd, scout_vfd, wait_time, have_scout):
     font = pg.font.SysFont('arial', 20)
 
@@ -135,7 +79,7 @@ def animate(rescuers_traj, scouts_traj, victim_traj, rescuer_vfd, scout_vfd, wai
             if event.type == pg.QUIT:
                 run = False
         if have_scout:
-            for rescuers_stt, scouts_stt, victim_stt in zip(rescuers_traj[0], scouts_traj[0], victim_traj[0]):
+            for rescuers_stt, scouts_stt, victim_stt in zip(rescuers_traj, scouts_traj, victim_traj):
                 # for rescuers_stt, scouts_stt, victim_stt in zip(np.moveaxis(rescuers_traj, 0, -1),
                 #                                                 np.moveaxis(scouts_traj, 0, -1), victim_traj):
                 for num in range(num_rescuers):
@@ -161,15 +105,19 @@ def animate(rescuers_traj, scouts_traj, victim_traj, rescuer_vfd, scout_vfd, wai
                 # agents
                 for num in range(num_rescuers):
                     screen.blit(img_mdf_r,
-                                (rescuers_stt[1] * (WIDTH // Col_num), rescuers_stt[0] * (HEIGHT // Row_num)))
+                                (rescuers_stt[1] * (WIDTH // Col_num),
+                                 rescuers_stt[0] * (HEIGHT // Row_num)))
                     screen.blit(font.render(str(num + 1), True, (0, 0, 0)),
-                                (rescuers_stt[1] * (WIDTH // Col_num), rescuers_stt[0] * (HEIGHT // Row_num)))
+                                (rescuers_stt[1] * (WIDTH // Col_num),
+                                 rescuers_stt[0] * (HEIGHT // Row_num)))
+
                 for num in range(num_scouts):
                     screen.blit(img_mdf_scout, (scouts_stt[1] * (WIDTH // Col_num),
                                                 scouts_stt[0] * (HEIGHT // Row_num)))
                     screen.blit(font.render(str(num + 1), True, (0, 0, 0)),
                                 (scouts_stt[1] * (WIDTH // Col_num), scouts_stt[0] * (HEIGHT // Row_num)))
-                screen.blit(img_mdf_victim, (victim_stt[1] * (WIDTH // Col_num), victim_stt[0] * (HEIGHT // Row_num)))
+                screen.blit(img_mdf_victim, (victim_stt[1] * (WIDTH // Col_num),
+                                             victim_stt[0] * (HEIGHT // Row_num)))
 
                 draw_grid(screen)
                 pg.display.flip()

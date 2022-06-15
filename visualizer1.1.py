@@ -5,9 +5,9 @@ import h5py
 
 
 plt.rcParams.update({'font.size': 22})
-file_name = 'multi_agent_Q_learning_2r_3s_3rs.hdf5'
+file_name = 'multi_agent_Q_learning.hdf5'
 
-run_animate = True
+run_animate = False
 
 rescue_team_Traj = []
 rescue_team_RewSum = []
@@ -17,7 +17,7 @@ rescue_team_Steps_seen = []
 rescue_team_Q = []
 victims_Traj = []
 
-with h5py.File('multi_agent_Q_learning.hdf5', 'r') as f:
+with h5py.File(file_name, 'r') as f:
     for idx in range(len(f['RS_VFD'])):
         rescue_team_Traj.append(f[f'RS{idx}_trajectory'])
         rescue_team_RewSum.append(f[f'RS{idx}_reward'])

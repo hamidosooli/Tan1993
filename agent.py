@@ -16,6 +16,7 @@ class Agent:
 
         self.CanSeeIt = False
         self.Finish = False
+        self.Convergence = False
         self.First = True
         self.wereHere = np.ones((num_rows, num_cols))
         self.Speed = speed  # is the number of cells the agent can move in one time-step
@@ -47,6 +48,7 @@ class Agent:
         self.curr_Sensation = [np.nan, np.nan]
         self.CanSeeIt = False
         self.Finish = False
+        self.Convergence = False
         self.First = True
         self.t_step_seen = 0
         self.RewHist = []
@@ -70,27 +72,27 @@ class Agent:
 
         return self.curr_Pos
 
-    def update_sensation(self, raw_sensation, sensation_evaluate, pos2pos, net_adj_mat, adj_mat):
+    def update_sensation(self, index, raw_sensation, sensation_evaluate, pos2pos, net_adj_mat, adj_mat):
 
         next_sensation = [np.nan, np.nan]
         self.CanSeeIt = False
 
-        if any(sensation_evaluate[self.id, :]):
-            first_victim = np.argwhere(sensation_evaluate[self.id, :])[0][0]
-            next_sensation = raw_sensation[self.id, first_victim, :]
+        if any(sensation_evaluate[index, :]):
+            first_victim = np.argwhere(sensation_evaluate[index, :])[0][0]
+            next_sensation = raw_sensation[index, first_victim, :]
             self.CanSeeIt = True
 
-        elif not all(np.isnan(net_adj_mat[self.id, :])):
-            num_scouts = np.sum(adj_mat[self.id, :])
+        elif not all(np.isnan(net_adj_mat[index, :])):
+            num_scouts = np.sum(adj_mat[index, :])
             for ns in range(int(num_scouts)):
-                curr_scout = np.argwhere(adj_mat[self.id, :])[ns]
+                curr_scout = np.argwhere(adj_mat[index, :])[ns]
 
                 if any(sensation_evaluate[curr_scout, :][0].tolist()):
                     first_victim = np.argwhere(sensation_evaluate[curr_scout, :][0])[0]
 
-                    next_sensation[0] = (pos2pos[curr_scout, self.id][0][0] +
+                    next_sensation[0] = (pos2pos[curr_scout, index][0][0] +
                                          raw_sensation[curr_scout, first_victim, :][0][0])
-                    next_sensation[1] = (pos2pos[curr_scout, self.id][0][1] +
+                    next_sensation[1] = (pos2pos[curr_scout, index][0][1] +
                                          raw_sensation[curr_scout, first_victim, :][0][1])
 
                     self.CanSeeIt = True
@@ -106,15 +108,36 @@ class Agent:
 
         return int(index)
 
-    def rescue_accomplished(self):
+    def rescue_accomplished(self, rescue_team_Hist, agent, adj_mat):
         if self.old_Sensation[0] == 0 and self.old_Sensation[1] == 0:
             self.Finish = True
+
+            adj_mat = np.delete(adj_mat, rescue_team_Hist.index(agent), 0)
+            adj_mat = np.delete(adj_mat, rescue_team_Hist.index(agent), 1)
+
+            rescue_team_Hist.remove(agent)
         if not self.Finish:
             self.old_Pos = self.curr_Pos
 
-    def victim_rescued(self, rescuers_pos_list):
+        return rescue_team_Hist, adj_mat
+
+    def victim_rescued(self, rescuers_pos_list, victim, victims_Hist, victims_memory):
+
         for rescuer_pos in rescuers_pos_list:
-            if rescuer_pos[0] == self.old_Pos[0] and rescuer_pos[1] == self.old_Pos[1]:
+            if ((rescuer_pos[0] == self.old_Pos[0] and rescuer_pos[1] == self.old_Pos[1]) and
+               rescuer_pos not in victims_memory):
                 self.Finish = True
+                victims_Hist.remove(victim)
+                who_rescued = rescuer_pos.tolist()
         if not self.Finish:
             self.old_Pos = self.curr_Pos
+            who_rescued = []
+        return victims_Hist, who_rescued
+
+    def convergence_check(self, accuracy):
+
+        if (np.abs(np.sum(self.Q - self.Q_hist) /
+                   (np.shape(self.Q)[0] * np.shape(self.Q)[1])) <= accuracy):
+            self.Convergence = True
+
+        return self.Convergence

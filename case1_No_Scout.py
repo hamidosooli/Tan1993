@@ -78,6 +78,17 @@ def sensation2index(sensation, VFD):
     return index
 
 
+def smart_move(were_here, pos, pos_prime):
+    if len(np.argwhere(were_here)) > 0:
+        for loc in np.argwhere(were_here):
+            if np.sqrt((loc[0] - pos[0]) ** 2 + (loc[1] - pos[1]) ** 2) == 1:
+                pos_prime = loc
+                break
+            else:
+                continue
+    return pos_prime
+
+
 def rl_agent(beta=0.8):
     global default_sensation
     global can_see_it
@@ -99,17 +110,16 @@ def rl_agent(beta=0.8):
         R = []
         R_prime = []
 
-        A_hunter = []
-        A_prey = []
-
         t_step = 0
         see_t_step = 0
         default_sensation = [np.nan, np.nan]
+        wereHere_hunter = np.ones((Row_num, Col_num))
         while True:
             t_step += 1
 
             T_hunter.append(hunter_pos)
             T_prey.append(prey_pos)
+            wereHere_hunter[int(hunter_pos[0]), int(hunter_pos[1])] = 0
 
             hunter_sensation_step1 = np.subtract(prey_pos, hunter_pos)
             hunter_sensation = update_sensation(hunter_sensation_step1)
@@ -118,19 +128,16 @@ def rl_agent(beta=0.8):
             hunter_probs = Boltzmann(Q[idx, :])
 
             hunter_action = np.random.choice(ACTIONS, p=hunter_probs)
-            prey_action = np.random.choice(ACTIONS)
-
             hunter_pos_prime = movement(hunter_pos, hunter_action)
-            prey_pos_prime = movement(prey_pos, prey_action)
+
+            if idx == (2 * Hunter_VFD + 1) ** 2:
+                hunter_pos_prime = smart_move(wereHere_hunter, hunter_pos, hunter_pos_prime)
 
             hunter_sensation_prime_step1 = np.subtract(prey_pos, hunter_pos_prime)
             hunter_sensation_prime = update_sensation(hunter_sensation_prime_step1)
 
-            re = reward(hunter_sensation)
+            re = reward(hunter_sensation_prime)
             R.append(re)
-
-            A_hunter.append(hunter_action)
-            A_prey.append(prey_action)
 
             if can_see_it:
                 R_prime.append(re)
@@ -139,10 +146,7 @@ def rl_agent(beta=0.8):
             idx_prime = sensation2index(hunter_sensation_prime, Hunter_VFD)
             Q[idx, hunter_action] += beta * (re + gamma * np.max(Q[idx_prime, :]) - Q[idx, hunter_action])
 
-            hunter_pos = hunter_pos_prime
-            prey_pos = prey_pos_prime
-            if hunter_sensation == [0, 0]:
-
+            if hunter_sensation == [0, 0] or hunter_sensation_prime == [0, 0]:
                 steps.append(t_step+1)
                 see_steps.append(see_t_step+1)
 
@@ -153,17 +157,20 @@ def rl_agent(beta=0.8):
 
                 break
 
-    return T_hunter, T_prey, A_hunter, A_prey, rewards, steps, see_rewards, see_steps, Q
+            prey_action = np.random.choice(ACTIONS)
+            prey_pos_prime = movement(prey_pos, prey_action)
+
+            hunter_pos = hunter_pos_prime
+            prey_pos = prey_pos_prime
+
+    return T_hunter, T_prey, rewards, steps, see_rewards, see_steps, Q
 
 
-T_hunter, T_prey, A_hunter, A_prey, rewards, steps, see_rewards, see_steps, Q = rl_agent(beta=0.8)
+T_hunter, T_prey, rewards, steps, see_rewards, see_steps, Q = rl_agent(beta=0.8)
 
 with h5py.File(f'Tan1993_case1_no_scout.hdf5', "w") as f:
     f.create_dataset('T_hunter', data=T_hunter)
     f.create_dataset('T_prey', data=T_prey)
-
-    f.create_dataset('A_hunter', data=A_hunter)
-    f.create_dataset('A_prey', data=A_prey)
 
     f.create_dataset('rewards', data=rewards)
     f.create_dataset('steps', data=steps)

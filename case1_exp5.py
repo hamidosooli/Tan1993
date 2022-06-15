@@ -10,7 +10,7 @@ LEFT = 3
 ACTIONS = [FORWARD, BACKWARD, RIGHT, LEFT]
 nA = len(ACTIONS)
 
-NUM_EPISODES = 500
+NUM_EPISODES = 2000
 NUM_RUNS = 100
 Hunter_VFD = 2  # Hunter's visual field depth
 Scout_VFD = 2
@@ -132,10 +132,6 @@ def rl_agent(beta=0.8):
         R_scout = []
         R_prime_scout = []
 
-        A_hunter = []
-        A_scout = []
-        A_prey = []
-
         t_step = 0
         see_t_step = 0
         see_t_step_scout = 0
@@ -162,11 +158,8 @@ def rl_agent(beta=0.8):
             # scout_probs = Boltzmann(Q_scout[idx_scout, :])
             scout_action = eps_greedy(Q_scout[idx_scout, :], ACTIONS)#np.random.choice(ACTIONS, p=scout_probs)
 
-            prey_action = np.random.choice(ACTIONS)
-
             hunter_pos_prime = movement(hunter_pos, hunter_action)
             scout_pos_prime = movement(scout_pos, scout_action)
-            prey_pos_prime = movement(prey_pos, prey_action)
 
             scout2hunter_prime = np.subtract(scout_pos_prime, hunter_pos_prime)
             scout_sensation_prime_step1 = np.subtract(prey_pos, scout_pos_prime)
@@ -179,10 +172,6 @@ def rl_agent(beta=0.8):
             R.append(re)
             R_scout.append(re_scout)
 
-            A_hunter.append(hunter_action)
-            A_scout.append(scout_action)
-            A_prey.append(prey_action)
-
             if can_see_it:
                 R_prime.append(re)
                 see_t_step += 1
@@ -193,18 +182,11 @@ def rl_agent(beta=0.8):
             idx_prime = sensation2index(hunter_sensation_prime, Row_num, can_see_it)
             Q[idx, hunter_action] += beta * (re + gamma * np.max(Q[idx_prime, :]) - Q[idx, hunter_action])
 
-
             idx_scout_prime = sensation2index(scout_sensation_prime, Scout_VFD, can_see_it_scout)
             Q_scout[idx_scout, scout_action] += beta * (re_scout + gamma * np.max(Q_scout[idx_scout_prime, :]) -
                                                         Q_scout[idx_scout, scout_action])
 
-            hunter_pos = hunter_pos_prime
-            scout_pos = scout_pos_prime
-
-            if t_step % 2 == 0:
-                prey_pos = prey_pos_prime
-
-            if hunter_sensation == [0, 0]:
+            if hunter_sensation == [0, 0] and hunter_sensation_prime == [0, 0]:
                 steps.append(t_step+1)
                 see_steps.append(see_t_step+1)
                 see_steps_scout.append(see_t_step+1)
@@ -217,6 +199,12 @@ def rl_agent(beta=0.8):
 
                 break
 
+            prey_action = np.random.choice(ACTIONS)
+            prey_pos_prime = movement(prey_pos, prey_action)
+            hunter_pos = hunter_pos_prime
+            scout_pos = scout_pos_prime
+
+            prey_pos = prey_pos_prime
     return rewards, rewards_scout, steps, see_rewards, see_steps, see_rewards_scout, see_steps_scout
 
 rewards_hunter_runs = []
@@ -228,6 +216,7 @@ see_rewards_scout_runs = []
 see_steps_scout_runs = []
 
 for run in range(NUM_RUNS):
+    print(f'Run {run + 1} of {NUM_RUNS}')
     rewards, rewards_scout, steps, see_rewards, see_steps, see_rewards_scout, see_steps_scout = rl_agent(beta=0.8)
 
     rewards_hunter_runs.append(rewards)
