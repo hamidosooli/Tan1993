@@ -22,12 +22,11 @@ Col_num = 20
 row_lim = Row_num - 1
 col_lim = Col_num - 1
 
-#                          s1  rs2 s3  rs4 r5
-adj_mat_prior = np.array([[0,  0,  0,  0,  0],
-                          [1,  0,  1,  0,  0],
-                          [0,  0,  0,  0,  0],
-                          [1,  0,  1,  0,  0],
-                          [1,  0,  1,  1,  0]], dtype=float)
+#                          r1  r2  s3  s4
+adj_mat_prior = np.array([[0,  0,  1,  0],
+                          [0,  0,  0,  1],
+                          [0,  0,  0,  0],
+                          [0,  0,  0,  0]], dtype=float)
 
 
 # Transition function
@@ -67,22 +66,22 @@ def env(accuracy=1e-15):
     agent = Agent
 
     # Define the rescue team
-    rs1 = agent(0, 's', 2, 2, 1, [0, 0], num_Acts, Row_num, Col_num)
-    rs2 = agent(1, 'rs', 3, Row_num, 1, [0, col_lim], num_Acts, Row_num, Col_num)
-    rs3 = agent(2, 's', 3, 3, 1, [row_lim, 0], num_Acts, Row_num, Col_num)
-    rs4 = agent(3, 'rs', 3, Row_num, 1, [row_lim, int(Col_num/2)], num_Acts, Row_num, Col_num)
-    rs5 = agent(4, 'r', 4, Row_num, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
+    r1 = agent(0, 'r', 3, Row_num, 1, [0, 0], num_Acts, Row_num, Col_num)
+    r2 = agent(1, 'r', 3, Row_num, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
+    s3 = agent(2, 's', 4, 4, 1, [row_lim, 0], num_Acts, Row_num, Col_num)
+    s4 = agent(3, 's', 4, 4, 1, [0, col_lim], num_Acts, Row_num, Col_num)
+    # rs5 = agent(4, 'r', 4, Row_num, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
 
     # Define the victims
     v1 = agent(0, 'v', 0, 0, 1, [int(Row_num / 2) - 2, int(Col_num / 2) - 2], num_Acts, Row_num, Col_num)
-    v2 = agent(1, 'v', 0, 0, 1, [int(Row_num / 2) - 2, int(Col_num / 2) - 2], num_Acts, Row_num, Col_num)
-    v3 = agent(2, 'v', 0, 0, 1, [int(Row_num / 2) - 2, int(Col_num / 2) - 2], num_Acts, Row_num, Col_num)
+    v2 = agent(1, 'v', 0, 0, 1, [int(Row_num / 2) + 2, int(Col_num / 2) + 2], num_Acts, Row_num, Col_num)
+    # v3 = agent(2, 'v', 0, 0, 1, [int(Row_num / 2) - 2, int(Col_num / 2) - 2], num_Acts, Row_num, Col_num)
     # v4 = agent(3, 'v', 0, 0, 1, [int(Row_num / 2) + 4, int(Col_num / 2) + 4], num_Acts, Row_num, Col_num)
     # v5 = agent(4, 'v', 0, 0, 1, [int(Row_num / 2) - 4, int(Col_num / 2) - 4], num_Acts, Row_num, Col_num)
 
     # List of objects
-    rescue_team = [rs1, rs2, rs3, rs4, rs5]
-    victims = [v1, v2, v3]
+    rescue_team = [r1, r2, s3, s4]
+    victims = [v1, v2]
     VFD_list = []
     num_just_scouts = 0
     rescue_team_roles = []
@@ -119,7 +118,7 @@ def env(accuracy=1e-15):
         for victim in victims:
             victim.reset()
 
-        t_step = -1
+        t_step = 0
 
         while True:
             num_rescue_team = len(rescue_team_Hist)
@@ -247,7 +246,7 @@ def env(accuracy=1e-15):
                                 if victim.Finish and victim.First:
                                     victim.Steps.append(t_step)
                                     victim.First = False
-                                    # break     #  Rescue more than one victim by an agent
+                                    break  # Rescue more than one victim by an agent
                         # break     #  More than one agent can rescue a victim
             # print(rescue_team_Hist, '\n', victims_Hist)
             if len(rescue_team_Hist) == num_just_scouts or len(victims_Hist) == 0:
@@ -304,9 +303,9 @@ def env(accuracy=1e-15):
 (rescue_team_Traj,
  rescue_team_RewSum, rescue_team_Steps,
  rescue_team_RewSum_seen, rescue_team_Steps_seen,
- rescue_team_Q, victims_Traj, VFD_list, rescue_team_roles) = env(accuracy=1e-6)
+ rescue_team_Q, victims_Traj, VFD_list, rescue_team_roles) = env(accuracy=1e-8)
 
-with h5py.File('multi_agent_Q_learning_test.hdf5', 'w') as f:
+with h5py.File('multi_agent_Q_learning_2R_2S.hdf5', 'w') as f:
     for idx, traj in enumerate(rescue_team_Traj):
         f.create_dataset(f'RS{idx}_trajectory', data=traj)
     for idx, rew_sum in enumerate(rescue_team_RewSum):

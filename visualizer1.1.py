@@ -5,7 +5,7 @@ import h5py
 
 
 plt.rcParams.update({'font.size': 22})
-file_name = 'multi_agent_Q_learning_test.hdf5'
+file_name = 'multi_agent_Q_learning_2R_NS.hdf5'
 
 run_animate = True
 
