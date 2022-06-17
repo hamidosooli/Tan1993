@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import h5py
 
@@ -20,12 +22,12 @@ Col_num = 20
 row_lim = Row_num - 1
 col_lim = Col_num - 1
 
-#                    rs1 rs2 rs3 rs4 rs5
-adj_mat = np.array([[0,  0,  0,  0,  1],
-                    [1,  0,  0,  0,  0],
-                    [0,  1,  0,  0,  0],
-                    [0,  0,  1,  0,  0],
-                    [0,  0,  0,  1,  0]], dtype=float)
+#                          s1  rs2 s3  rs4 r5
+adj_mat_prior = np.array([[0,  0,  0,  0,  0],
+                          [1,  0,  1,  0,  0],
+                          [0,  0,  0,  0,  0],
+                          [1,  0,  1,  0,  0],
+                          [1,  0,  1,  1,  0]], dtype=float)
 
 
 # Transition function
@@ -58,38 +60,47 @@ def q_learning(q, old_idx, curr_idx, re, act, alpha=0.8, gamma=0.9):
     return q
 
 
-def env(accuracy=0.01):
-    global adj_mat
+def env(accuracy=1e-15):
+    global adj_mat_prior
     # Define the Network and the agent objects
     network = Network
     agent = Agent
 
     # Define the rescue team
-    rs1 = agent(0, 'rs', 2, Row_num, 2, [0, 0], num_Acts, Row_num, Col_num)
-    rs2 = agent(1, 'rs', 3, Row_num, 2, [0, col_lim], num_Acts, Row_num, Col_num)
-    rs3 = agent(2, 'rs', 2, Row_num, 2, [row_lim, 0], num_Acts, Row_num, Col_num)
-    rs4 = agent(3, 'rs', 3, Row_num, 2, [row_lim, int(Col_num/2)], num_Acts, Row_num, Col_num)
-    rs5 = agent(4, 'rs', 4, Row_num, 2, [row_lim, col_lim], num_Acts, Row_num, Col_num)
+    rs1 = agent(0, 's', 2, 2, 1, [0, 0], num_Acts, Row_num, Col_num)
+    rs2 = agent(1, 'rs', 3, Row_num, 1, [0, col_lim], num_Acts, Row_num, Col_num)
+    rs3 = agent(2, 's', 3, 3, 1, [row_lim, 0], num_Acts, Row_num, Col_num)
+    rs4 = agent(3, 'rs', 3, Row_num, 1, [row_lim, int(Col_num/2)], num_Acts, Row_num, Col_num)
+    rs5 = agent(4, 'r', 4, Row_num, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
 
     # Define the victims
-    v1 = agent(0, 'v', 0, 0, 1, [int(Row_num/2), int(Col_num/2)], num_Acts, Row_num, Col_num)
-    v2 = agent(1, 'v', 0, 0, 1, [int(Row_num / 2) + 2, int(Col_num / 2) + 2], num_Acts, Row_num, Col_num)
+    v1 = agent(0, 'v', 0, 0, 1, [int(Row_num / 2) - 2, int(Col_num / 2) - 2], num_Acts, Row_num, Col_num)
+    v2 = agent(1, 'v', 0, 0, 1, [int(Row_num / 2) - 2, int(Col_num / 2) - 2], num_Acts, Row_num, Col_num)
     v3 = agent(2, 'v', 0, 0, 1, [int(Row_num / 2) - 2, int(Col_num / 2) - 2], num_Acts, Row_num, Col_num)
-    v4 = agent(3, 'v', 0, 0, 1, [int(Row_num / 2) + 4, int(Col_num / 2) + 4], num_Acts, Row_num, Col_num)
-    v5 = agent(4, 'v', 0, 0, 1, [int(Row_num / 2) - 4, int(Col_num / 2) - 4], num_Acts, Row_num, Col_num)
+    # v4 = agent(3, 'v', 0, 0, 1, [int(Row_num / 2) + 4, int(Col_num / 2) + 4], num_Acts, Row_num, Col_num)
+    # v5 = agent(4, 'v', 0, 0, 1, [int(Row_num / 2) - 4, int(Col_num / 2) - 4], num_Acts, Row_num, Col_num)
 
     # List of objects
     rescue_team = [rs1, rs2, rs3, rs4, rs5]
-    victims = [v1, v2, v3, v4, v5]
-    victims_memory = []
-
-
+    victims = [v1, v2, v3]
+    VFD_list = []
+    num_just_scouts = 0
+    rescue_team_roles = []
+    for agent in rescue_team:
+        rescue_team_roles.append(agent.Role)
+        # List of the Visual Fields
+        VFD_list.append(agent.VisualField)
+        # Count the number of just scouts
+        if agent.Role == 's':
+            num_just_scouts += 1
     eps = 0
-
+    rescue_flags = []
+    tic = time.time()
     while True:
 
         rescue_team_Hist = rescue_team.copy()
         victims_Hist = victims.copy()
+        adj_mat = adj_mat_prior.copy()
 
         agents_idx = []
         for agent in rescue_team:
@@ -132,6 +143,7 @@ def env(accuracy=0.01):
 
                 # History of Q
                 agent.Q_hist = agent.Q.copy()
+
             rescue_team_VFD_list = np.asarray(rescue_team_VFD_list)
 
             # Keep track of the victims positions
@@ -141,34 +153,24 @@ def env(accuracy=0.01):
                 victims_old_pos_list.append(victim.old_Pos)
             victims_old_pos_list = np.asarray(victims_old_pos_list)
 
-            # Calculation of the distance between scouts and rescuers
             rescue_team_old_pos_list = []
+
             for agent in rescue_team_Hist:
                 rescue_team_old_pos_list.append(agent.old_Pos)
 
             rescue_team_old_pos_list = np.asarray(rescue_team_old_pos_list)
-            print(rescue_team_old_pos_list)
-            print(victims_Hist, rescue_team_Hist)
+
+            # Calculation of the distance between the agents
             old_scouts2rescuers = net.pos2pos(rescue_team_old_pos_list)
 
             # Calculation of the raw sensations for the rescue team
             old_raw_sensations = net.sensed_pos(victims_old_pos_list, rescue_team_old_pos_list)
 
             # Check to see if the sensations are in the agents visual fields
-            eval_old_sensations = net.is_seen(rescue_team_VFD_list,
-                                              old_raw_sensations)
-            #
-            # for agent in rescue_team_Hist:
-            #     if agent.Finish:
-            #         old_raw_sensations[agent.id, :, :] = [np.nan, np.nan]
-            #         eval_old_sensations[agent.id, :] = False
-            #
-            # for victim in victims_Hist:
-            #     if victim.Finish:
-            #         old_raw_sensations[:, victim.id, :] = [np.nan, np.nan]
-            #         eval_old_sensations[:, victim.id] = False
+            eval_old_sensations = net.is_seen(rescue_team_VFD_list, old_raw_sensations)
 
             rescue_team_curr_pos_list = []
+            rescue_team_role_list = []
             for agent in rescue_team_Hist:
                 # Calculation of the sensations for the rescue team
                 agent.old_Sensation = agent.update_sensation(rescue_team_Hist.index(agent),
@@ -183,12 +185,18 @@ def env(accuracy=0.01):
                 # Next positions for the rescue team
                 agent.curr_Pos = movement(agent.old_Pos, agent.action, agent.Speed)
 
+                # Smart move algorithm
+                agent.smart_move(agent.old_Pos, agent.old_Index, agent.wereHere)
+
                 # List of the current positions for the rescue team members
                 rescue_team_curr_pos_list.append(agent.curr_Pos)
 
+                # List of the roles for the rescue team members
+                rescue_team_role_list.append(agent.Role)
+
             rescue_team_curr_pos_list = np.asarray(rescue_team_curr_pos_list)
 
-            # Calculation of the distance between scouts and rescuers (after their movement)
+            # Calculation of the distance between agents (after their movement)
             curr_scouts2rescuers = net.pos2pos(rescue_team_curr_pos_list)
 
             # Calculation of the new raw sensations for the rescue team (after their movement)
@@ -197,118 +205,108 @@ def env(accuracy=0.01):
             # Check to see if the sensations are in the agents visual fields
             eval_curr_sensations = net.is_seen(rescue_team_VFD_list, curr_raw_sensations)
 
-            # for agent in rescue_team_Hist:
-            #     if agent.Finish:
-            #         curr_raw_sensations[agent.id, :, :] = [np.nan, np.nan]
-            #         eval_curr_sensations[agent.id, :] = False
-            #
-            # for victim in victims_Hist:
-            #     if victim.Finish:
-            #         curr_raw_sensations[:, victim.id, :] = [np.nan, np.nan]
-            #         eval_curr_sensations[:, victim.id] = False
-
             # Calculation of the new sensations for the rescue team (after their movement)
-            rescue_flags = []
             for agent in rescue_team_Hist:
-                rescue_flags.append(agent.Finish)  ###################################################################
+                # print(rescue_team_curr_pos_list, '\n', victims_old_pos_list)
                 agent.curr_Sensation = agent.update_sensation(rescue_team_Hist.index(agent),
                                                               curr_raw_sensations, eval_curr_sensations,
                                                               curr_scouts2rescuers, net.adj_mat, adj_mat)
                 # Calculation of the indices for the rescue team (after their movement)
                 agent.curr_Index = agent.sensation2index(agent.curr_Sensation, agent.max_VisualField)
 
-                # Keeping track of the rewards
                 # Rewarding the rescue team
-                agent.reward = reward_func(agent.old_Sensation)
-                if not agent.Finish:
-                    agent.RewHist.append(agent.reward)
-                    if agent.CanSeeIt:
-                        agent.RewHist_seen.append(agent.reward)
+                agent.reward = reward_func(agent.curr_Sensation)
 
                 # Q learning for the rescue team
                 agent.Q = q_learning(agent.Q, agent.old_Index, agent.curr_Index, agent.reward, agent.action, alpha=0.8)
 
                 # Check to see if the team rescued any victim
-                if agent.Finish and agent.First:
-                    agent.Steps.append(t_step)
-                    agent.Steps_seen.append(agent.t_step_seen)
-                    agent.RewSum.append(np.sum(agent.RewHist))
-                    agent.RewSum_seen.append(np.sum(agent.RewHist_seen))
-
-                    agent.First = False
-
-                elif not agent.Finish:
-                    rescue_team[agent.id] = agent
-                    rescue_team_Hist, adj_mat = agent.rescue_accomplished(rescue_team_Hist, agent, adj_mat)
-
-                if len(rescue_team_Hist) == 0:
-                    break
-
+                if not agent.Finish:
+                    rescue_team_Hist, adj_mat, rescue_flags = agent.rescue_accomplished(rescue_team_Hist,
+                                                                                        agent, adj_mat, rescue_flags)
+                    # Keeping track of the rewards
+                    agent.RewHist.append(agent.reward)
+                    if agent.CanSeeIt:
+                        agent.RewHist_seen.append(agent.reward)
+                    if agent.Finish and agent.First:
+                        agent.Steps.append(t_step)
+                        agent.Steps_seen.append(agent.t_step_seen)
+                        agent.RewSum.append(np.sum(agent.RewHist))
+                        agent.RewSum_seen.append(np.sum(agent.RewHist_seen))
+                        rescue_team[agent.id] = agent
+                        agent.First = False
+                        for victim in victims_Hist:
+                            # Check to see if the victim rescued by the team
+                            # Keep track of the steps
+                            # Remove the victim from the list
+                            if not victim.Finish:
+                                victims[victim.id] = victim
+                                victims_Hist = victim.victim_rescued(rescue_team_curr_pos_list,
+                                                                     rescue_team_role_list,
+                                                                     victim, victims_Hist)
+                                if victim.Finish and victim.First:
+                                    victim.Steps.append(t_step)
+                                    victim.First = False
+                                    # break     #  Rescue more than one victim by an agent
+                        # break     #  More than one agent can rescue a victim
+            # print(rescue_team_Hist, '\n', victims_Hist)
+            if len(rescue_team_Hist) == num_just_scouts or len(victims_Hist) == 0:
+                print(f'In episode {eps}, all of the victims were rescued in {t_step} steps')
+                break
             for victim in victims_Hist:
-
-                # rescue_flags.append(victim.Finish)#############################################################
                 # Actions for the victims
                 victim.action = np.random.choice(ACTIONS)
                 # Victims next positions
                 victim.curr_Pos = movement(victim.old_Pos, victim.action, victim.Speed)
-
-                # Check to see if the victim rescued by the team
-                # Keep track of the steps
-                # Remove the victim from the list
                 # Update the victims position
-                if victim.Finish and victim.First:
-                    victim.Steps.append(t_step)
-
-                    victim.First = False
-                elif not victim.Finish:
-                    victims[victim.id] = victim
-                    victims_Hist, who_rescued_me = victim.victim_rescued(rescue_team_old_pos_list, victim,
-                                                                         victims_Hist, victims_memory)  ######################## remove finished from list
-                    if who_rescued_me != []:
-                        victims_memory.append(who_rescued_me)
-                print(victims_memory, '..............................................')
-                if len(victims_Hist) == 0:
-                    break
-            if len(rescue_team_Hist) == 0 and len(victims_Hist) == 0:
-                print(f'In episode {eps}, all of the victims were rescued in {t_step} steps')
-                break
-
+                if not victim.Finish:
+                    victim.old_Pos = victim.curr_Pos
+        # Check for the proper number of episodes
         convergence_flag = []
         for agent in rescue_team:
-            convergence_flag.append(agent.convergence_check(1e-15))
+            convergence_flag.append(agent.convergence_check(accuracy))
         if all(convergence_flag):
             break
-
+    for agent in rescue_team:
+        agent.Traj.append(agent.curr_Pos)
     rescue_team_Traj = []
     rescue_team_RewSum = []
     rescue_team_Steps = []
     rescue_team_RewSum_seen = []
     rescue_team_Steps_seen = []
     rescue_team_Q = []
+    largest = len(rescue_team[0].Traj)
     for agent in rescue_team:
-        rescue_team_Traj.append(agent.Traj)
+        if len(agent.Traj) > largest:
+            largest = len(agent.Traj)
         rescue_team_RewSum.append(agent.RewSum)
         rescue_team_Steps.append(agent.Steps)
         rescue_team_RewSum_seen.append(agent.RewSum_seen)
         rescue_team_Steps_seen.append(agent.Steps_seen)
         rescue_team_Q.append(agent.Q)
+    for agent in rescue_team:
+        while len(agent.Traj) < largest:
+            agent.Traj.append(agent.Traj[-1])
+        rescue_team_Traj.append(agent.Traj)
 
     victims_Traj = []
     for victim in victims:
+        while len(victim.Traj) < largest:
+            victim.Traj.append(victim.Traj[-1])
         victims_Traj.append(victim.Traj)
-
+    print(f'This experiment took {time.time() - tic} seconds')
     return (rescue_team_Traj,
             rescue_team_RewSum, rescue_team_Steps,
             rescue_team_RewSum_seen, rescue_team_Steps_seen,
-            rescue_team_Q, victims_Traj, rescue_team_VFD_list)
+            rescue_team_Q, victims_Traj, VFD_list, rescue_team_roles)
 
 
 (rescue_team_Traj,
  rescue_team_RewSum, rescue_team_Steps,
  rescue_team_RewSum_seen, rescue_team_Steps_seen,
- rescue_team_Q, victims_Traj, rescue_team_VFD_list) = env(accuracy=1e-5)
+ rescue_team_Q, victims_Traj, VFD_list, rescue_team_roles) = env(accuracy=1e-6)
 
-with h5py.File('multi_agent_Q_learning.hdf5', 'w') as f:
+with h5py.File('multi_agent_Q_learning_test.hdf5', 'w') as f:
     for idx, traj in enumerate(rescue_team_Traj):
         f.create_dataset(f'RS{idx}_trajectory', data=traj)
     for idx, rew_sum in enumerate(rescue_team_RewSum):
@@ -324,4 +322,5 @@ with h5py.File('multi_agent_Q_learning.hdf5', 'w') as f:
     for idx, victim_traj in enumerate(victims_Traj):
         f.create_dataset(f'victim{idx}_trajectory', data=victim_traj)
     f.create_dataset('victims_num', data=[len(victims_Traj)])
-    f.create_dataset('RS_VFD', data=rescue_team_VFD_list)
+    f.create_dataset('RS_VFD', data=VFD_list)
+    f.create_dataset('RS_ROLES', data=rescue_team_roles)

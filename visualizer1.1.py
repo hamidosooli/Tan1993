@@ -5,9 +5,9 @@ import h5py
 
 
 plt.rcParams.update({'font.size': 22})
-file_name = 'multi_agent_Q_learning.hdf5'
+file_name = 'multi_agent_Q_learning_test.hdf5'
 
-run_animate = False
+run_animate = True
 
 rescue_team_Traj = []
 rescue_team_RewSum = []
@@ -18,7 +18,9 @@ rescue_team_Q = []
 victims_Traj = []
 
 with h5py.File(file_name, 'r') as f:
+
     for idx in range(len(f['RS_VFD'])):
+
         rescue_team_Traj.append(f[f'RS{idx}_trajectory'])
         rescue_team_RewSum.append(f[f'RS{idx}_reward'])
         rescue_team_Steps.append(f[f'RS{idx}_steps'])
@@ -29,7 +31,8 @@ with h5py.File(file_name, 'r') as f:
         victims_Traj.append(f[f'victim{idx}_trajectory'])
 
     if run_animate:
-        animate(np.asarray(rescue_team_Traj), np.asarray(victims_Traj), np.asarray(f['RS_VFD']), wait_time=0.5)
+        animate(np.asarray(rescue_team_Traj), np.asarray(victims_Traj),
+                np.asarray(f['RS_VFD']), f['RS_ROLES'], wait_time=0.5)
 
     rescue_team_legends = []
 
@@ -38,28 +41,28 @@ with h5py.File(file_name, 'r') as f:
         plt.plot(np.asarray(rescue_team_RewSum[idx]))
         rescue_team_legends.append(f'Agent {idx+1}')
     plt.xlabel('Number of episodes')
-    plt.ylabel('Sum of the rewards during the whole rescue time')
+    plt.ylabel('Rescue Team Total Rewards')
     plt.legend(rescue_team_legends)
 
     plt.figure('reward_seen')
     for idx in range(len(f['RS_VFD'])):
         plt.plot(np.asarray(rescue_team_RewSum_seen[idx]))
-    plt.xlabel('Number of episodes')
-    plt.ylabel('Sum of the rewards after seeing the victim for the first time')
+    plt.xlabel('Number of Episodes')
+    plt.ylabel('Rescue Team Rewards During Victim Visit')
     plt.legend(rescue_team_legends)
 
     plt.figure('steps')
     for idx in range(len(f['RS_VFD'])):
         plt.plot(np.asarray(rescue_team_Steps[idx]))
-    plt.xlabel('Number of episodes')
-    plt.ylabel('Number of steps to finish the rescue mission')
+    plt.xlabel('Number of Episodes')
+    plt.ylabel('Rescue Team Total Steps')
     plt.legend(rescue_team_legends)
 
     plt.figure('steps_seen')
     for idx in range(len(f['RS_VFD'])):
         plt.plot(np.asarray(rescue_team_Steps_seen[idx]))
-    plt.xlabel('Number of episodes')
-    plt.ylabel('Number of steps from seeing the victim for the first time to the end')
+    plt.xlabel('Number of Episodes')
+    plt.ylabel('Rescue Team Steps During Victim Visit')
     plt.legend(rescue_team_legends)
 
     plt.show()

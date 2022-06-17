@@ -17,7 +17,8 @@ Row_num = 20  # number of rows
 bg_color = pg.Color(255, 255, 255)
 line_color = pg.Color(128, 128, 128)
 vfdr_color = pg.Color(8, 136, 8, 128)
-
+vfds_color = pg.Color(255, 165, 0, 128)
+vfdrs_color = pg.Color(173, 216, 230, 128)
 
 def draw_grid(scr):
     '''a function to draw gridlines and other objects'''
@@ -34,11 +35,11 @@ def draw_grid(scr):
             pg.draw.rect(scr, bg_color, rect, 1)
 
 
-def animate(rescuers_traj, victims_traj, rescuers_vfd, wait_time):
+def animate(rescue_team_traj, victims_traj, rescue_team_vfd, rescue_team_roles, wait_time):
 
     font = pg.font.SysFont('arial', 20)
 
-    num_rescuers = len(rescuers_traj)
+    num_rescue_team = len(rescue_team_traj)
     num_victims = len(victims_traj)
 
     pg.init()  # initialize pygame
@@ -49,6 +50,12 @@ def animate(rescuers_traj, victims_traj, rescuers_vfd, wait_time):
 
     img_rescuer = pg.image.load('TurtleBot.png')
     img_mdf_r = pg.transform.scale(img_rescuer, (WIDTH // Col_num, HEIGHT // Row_num))
+
+    img_rescuer_scout = pg.image.load('typhoon.jpg')
+    img_mdf_rs = pg.transform.scale(img_rescuer_scout, (WIDTH // Col_num, HEIGHT // Row_num))
+
+    img_scout = pg.image.load('Crazyflie.JPG')
+    img_mdf_s = pg.transform.scale(img_scout, (WIDTH // Col_num, HEIGHT // Row_num))
 
     img_victim = pg.image.load('victim.png')
     img_mdf_victim = pg.transform.scale(img_victim, (WIDTH // Col_num, HEIGHT // Row_num))
@@ -65,25 +72,37 @@ def animate(rescuers_traj, victims_traj, rescuers_vfd, wait_time):
                 run = False
         step = -1
         list_victims = np.arange(num_victims).tolist()
-        for rescuers_stt, victims_stt in zip(np.moveaxis(rescuers_traj, 0, -1),
+        for rescue_team_stt, victims_stt in zip(np.moveaxis(rescue_team_traj, 0, -1),
                                              np.moveaxis(victims_traj, 0, -1)):
             step += 1
-            for num in range(num_rescuers):
+            for num in range(num_rescue_team):
+                if str(rescue_team_roles[num]) == "b'rs'":
+                    vfd_color = vfdrs_color
+                elif str(rescue_team_roles[num]) == "b'r'":
+                    vfd_color = vfdr_color
+                elif str(rescue_team_roles[num]) == "b's'":
+                    vfd_color = vfds_color
                 # rescuer visual field depth
-                for j in range(int(max(rescuers_stt[1, num] - rescuers_vfd[num], 0)),
-                               int(min(Row_num, rescuers_stt[1, num] + rescuers_vfd[num] + 1))):
-                    for i in range(int(max(rescuers_stt[0, num] - rescuers_vfd[num], 0)),
-                                   int(min(Col_num, rescuers_stt[0, num] + rescuers_vfd[num] + 1))):
+                for j in range(int(max(rescue_team_stt[1, num] - rescue_team_vfd[num], 0)),
+                               int(min(Row_num, rescue_team_stt[1, num] + rescue_team_vfd[num] + 1))):
+                    for i in range(int(max(rescue_team_stt[0, num] - rescue_team_vfd[num], 0)),
+                                   int(min(Col_num, rescue_team_stt[0, num] + rescue_team_vfd[num] + 1))):
                         rect = pg.Rect(j * (WIDTH // Col_num), i * (HEIGHT // Row_num),
                                        (WIDTH // Col_num), (HEIGHT // Row_num))
-                        pg.draw.rect(screen, vfdr_color, rect)
+                        pg.draw.rect(screen, vfd_color, rect)
 
             # agents
-            for num in range(num_rescuers):
-                screen.blit(img_mdf_r,
-                            (rescuers_stt[1, num] * (WIDTH // Col_num), rescuers_stt[0, num] * (HEIGHT // Row_num)))
+            for num in range(num_rescue_team):
+                if str(rescue_team_roles[num]) == "b'rs'":
+                    img_mdf = img_mdf_rs
+                elif str(rescue_team_roles[num]) == "b'r'":
+                    img_mdf = img_mdf_r
+                elif str(rescue_team_roles[num]) == "b's'":
+                    img_mdf = img_mdf_s
+                screen.blit(img_mdf,
+                            (rescue_team_stt[1, num] * (WIDTH // Col_num), rescue_team_stt[0, num] * (HEIGHT // Row_num)))
                 screen.blit(font.render(str(num + 1), True, (0, 0, 0)),
-                            (rescuers_stt[1, num] * (WIDTH // Col_num), rescuers_stt[0, num] * (HEIGHT // Row_num)))
+                            (rescue_team_stt[1, num] * (WIDTH // Col_num), rescue_team_stt[0, num] * (HEIGHT // Row_num)))
 
             for num in list_victims:
                 screen.blit(img_mdf_victim, (victims_stt[1, num] * (WIDTH // Col_num),
@@ -102,24 +121,31 @@ def animate(rescuers_traj, victims_traj, rescuers_vfd, wait_time):
                 screen.blit(bg, (victims_stt[1, num] * (WIDTH // Col_num),
                                  victims_stt[0, num] * (HEIGHT // Row_num)))
 
-            for num in range(num_rescuers):
-                screen.blit(bg, (rescuers_stt[1, num] * (WIDTH // Col_num),
-                                 rescuers_stt[0, num] * (HEIGHT // Row_num)))
+            for num in range(num_rescue_team):
+                screen.blit(bg, (rescue_team_stt[1, num] * (WIDTH // Col_num),
+                                 rescue_team_stt[0, num] * (HEIGHT // Row_num)))
                 # rescuer visual field depths
-                for j in range(int(max(rescuers_stt[1, num] - rescuers_vfd[num], 0)),
-                               int(min(Row_num, rescuers_stt[1, num] + rescuers_vfd[num] + 1))):
-                    for i in range(int(max(rescuers_stt[0, num] - rescuers_vfd[num], 0)),
-                                   int(min(Col_num, rescuers_stt[0, num] + rescuers_vfd[num] + 1))):
+                for j in range(int(max(rescue_team_stt[1, num] - rescue_team_vfd[num], 0)),
+                               int(min(Row_num, rescue_team_stt[1, num] + rescue_team_vfd[num] + 1))):
+                    for i in range(int(max(rescue_team_stt[0, num] - rescue_team_vfd[num], 0)),
+                                   int(min(Col_num, rescue_team_stt[0, num] + rescue_team_vfd[num] + 1))):
                         rect = pg.Rect(j * (WIDTH // Col_num), i * (HEIGHT // Row_num),
                                        (WIDTH // Col_num), (HEIGHT // Row_num))
                         pg.draw.rect(screen, bg_color, rect)
 
             victims_history = victims_stt
-        screen.blit(img_mdf_r, (rescuers_traj[-1][1] * (WIDTH // Col_num),
-                                rescuers_traj[-1][0] * (HEIGHT // Row_num)))
-
-        screen.blit(img_mdf_victim, (victims_traj[-1][1] * (WIDTH // Col_num),
-                                     victims_traj[-1][0] * (HEIGHT // Row_num)))
+        for num in range(num_rescue_team):
+            if str(rescue_team_roles[num]) == "b'rs'":
+                img_mdf = img_mdf_rs
+            elif str(rescue_team_roles[num]) == "b'r'":
+                img_mdf = img_mdf_r
+            elif str(rescue_team_roles[num]) == "b's'":
+                img_mdf = img_mdf_s
+            screen.blit(img_mdf, (rescue_team_traj[num, -1, 1] * (WIDTH // Col_num),
+                                  rescue_team_traj[num, -1, 0] * (HEIGHT // Row_num)))
+        for num in list_victims:
+            screen.blit(img_mdf_victim, (victims_traj[num, -1, 1] * (WIDTH // Col_num),
+                                         victims_traj[num, -1, 0] * (HEIGHT // Row_num)))
 
         draw_grid(screen)
         pg.display.flip()

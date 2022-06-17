@@ -56,11 +56,8 @@ class Agent:
         self.Traj = []
         self.wereHere = np.ones_like(self.wereHere)
 
-    def cell_marker(self, pos):
+    def smart_move(self, pos, idx, wereHere):
         self.wereHere[pos[0], pos[1]] = 0
-
-    def smart_move(self, idx, wereHere):
-
         if idx == (2 * self.max_VisualField + 1) ** 2:
             if len(np.argwhere(wereHere)) > 0:
                 for loc in np.argwhere(wereHere):
@@ -70,33 +67,42 @@ class Agent:
                     else:
                         continue
 
-        return self.curr_Pos
-
     def update_sensation(self, index, raw_sensation, sensation_evaluate, pos2pos, net_adj_mat, adj_mat):
 
         next_sensation = [np.nan, np.nan]
         self.CanSeeIt = False
 
         if any(sensation_evaluate[index, :]):
-            first_victim = np.argwhere(sensation_evaluate[index, :])[0][0]
-            next_sensation = raw_sensation[index, first_victim, :]
+            which_victim = np.argwhere(sensation_evaluate[index, :])[0][0]
+            for victim in np.argwhere(sensation_evaluate[index, :])[0]:
+                if (np.linalg.norm(raw_sensation[index, victim, :]) <
+                    np.linalg.norm(raw_sensation[index, which_victim, :])):
+                    which_victim = victim
+            next_sensation = raw_sensation[index, which_victim, :]
             self.CanSeeIt = True
 
         elif not all(np.isnan(net_adj_mat[index, :])):
+            temp_sensation = next_sensation.copy()
             num_scouts = np.sum(adj_mat[index, :])
             for ns in range(int(num_scouts)):
                 curr_scout = np.argwhere(adj_mat[index, :])[ns]
-
                 if any(sensation_evaluate[curr_scout, :][0].tolist()):
-                    first_victim = np.argwhere(sensation_evaluate[curr_scout, :][0])[0]
+                    which_victim = np.argwhere(sensation_evaluate[curr_scout, :][0])[0]
+                    for victim in np.argwhere(sensation_evaluate[curr_scout, :][0]):
+                        if (np.linalg.norm(raw_sensation[curr_scout, victim, :]) <
+                            np.linalg.norm(raw_sensation[curr_scout, which_victim, :])):
+                            which_victim = victim
 
                     next_sensation[0] = (pos2pos[curr_scout, index][0][0] +
-                                         raw_sensation[curr_scout, first_victim, :][0][0])
+                                         raw_sensation[curr_scout, which_victim, :][0][0])
                     next_sensation[1] = (pos2pos[curr_scout, index][0][1] +
-                                         raw_sensation[curr_scout, first_victim, :][0][1])
-
+                                         raw_sensation[curr_scout, which_victim, :][0][1])
                     self.CanSeeIt = True
-                    break
+
+                    if np.linalg.norm(temp_sensation) < np.linalg.norm(next_sensation):
+                        next_sensation = temp_sensation.copy()
+                    else:
+                        temp_sensation = next_sensation.copy()
 
         return next_sensation
 
@@ -108,10 +114,11 @@ class Agent:
 
         return int(index)
 
-    def rescue_accomplished(self, rescue_team_Hist, agent, adj_mat):
-        if self.old_Sensation[0] == 0 and self.old_Sensation[1] == 0:
+    def rescue_accomplished(self, rescue_team_Hist, agent, adj_mat, rescue_flags):
+        if ((self.curr_Sensation[0] == 0 and self.curr_Sensation[1] == 0) and
+                'r' in self.Role):
             self.Finish = True
-
+            rescue_flags.append(self.Finish)
             adj_mat = np.delete(adj_mat, rescue_team_Hist.index(agent), 0)
             adj_mat = np.delete(adj_mat, rescue_team_Hist.index(agent), 1)
 
@@ -119,20 +126,17 @@ class Agent:
         if not self.Finish:
             self.old_Pos = self.curr_Pos
 
-        return rescue_team_Hist, adj_mat
+        return rescue_team_Hist, adj_mat, rescue_flags
 
-    def victim_rescued(self, rescuers_pos_list, victim, victims_Hist, victims_memory):
-
-        for rescuer_pos in rescuers_pos_list:
+    def victim_rescued(self, rescue_team_pos_list, rescue_team_role_list, victim, victims_Hist):
+        for idx, rescuer_pos in enumerate(rescue_team_pos_list):
             if ((rescuer_pos[0] == self.old_Pos[0] and rescuer_pos[1] == self.old_Pos[1]) and
-               rescuer_pos not in victims_memory):
+                    'r' in rescue_team_role_list[idx]):
                 self.Finish = True
                 victims_Hist.remove(victim)
-                who_rescued = rescuer_pos.tolist()
-        if not self.Finish:
-            self.old_Pos = self.curr_Pos
-            who_rescued = []
-        return victims_Hist, who_rescued
+                break
+
+        return victims_Hist
 
     def convergence_check(self, accuracy):
 
