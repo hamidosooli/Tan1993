@@ -115,7 +115,8 @@ class Agent:
         return int(index)
 
     def rescue_accomplished(self, rescue_team_Hist, agent, adj_mat, rescue_flags):
-        if ((self.curr_Sensation[0] == 0 and self.curr_Sensation[1] == 0) and
+        if (((self.old_Sensation[0] == 0 and self.old_Sensation[1] == 0) or
+             (self.curr_Sensation[0] == 0 and self.curr_Sensation[1] == 0)) and
                 'r' in self.Role):
             self.Finish = True
             rescue_flags.append(self.Finish)
@@ -123,18 +124,20 @@ class Agent:
             adj_mat = np.delete(adj_mat, rescue_team_Hist.index(agent), 1)
 
             rescue_team_Hist.remove(agent)
-        if not self.Finish:
-            self.old_Pos = self.curr_Pos
 
         return rescue_team_Hist, adj_mat, rescue_flags
 
-    def victim_rescued(self, rescue_team_pos_list, rescue_team_role_list, victim, victims_Hist):
-        for idx, rescuer_pos in enumerate(rescue_team_pos_list):
-            if ((rescuer_pos[0] == self.old_Pos[0] and rescuer_pos[1] == self.old_Pos[1]) and
+    def victim_rescued(self, rescue_team_old_pos_list, rescue_team_curr_pos_list,
+                       rescue_team_role_list, victim, victims_Hist):
+        for idx, rescuer_old_pos in enumerate(rescue_team_old_pos_list):
+            if (((rescuer_old_pos[0] == self.old_Pos[0] and
+                  rescuer_old_pos[1] == self.old_Pos[1]) or
+                 (rescue_team_curr_pos_list[idx][0] == self.old_Pos[0] and
+                  rescue_team_curr_pos_list[idx][1] == self.old_Pos[1])) and
                     'r' in rescue_team_role_list[idx]):
                 self.Finish = True
                 victims_Hist.remove(victim)
-                break
+                break  # You already removed this victim, no need to check the rest of the list
 
         return victims_Hist
 

@@ -7,7 +7,7 @@ from action_selection import eps_greedy
 from network import Network
 from agent import Agent
 
-
+NUM_EPISODES = 2000
 # Actions
 FORWARD = 0
 BACKWARD = 1
@@ -23,10 +23,8 @@ row_lim = Row_num - 1
 col_lim = Col_num - 1
 
 #                          r1  r2  s3  s4
-adj_mat_prior = np.array([[0,  0,  1,  0],
-                          [0,  0,  0,  1],
-                          [0,  0,  0,  0],
-                          [0,  0,  0,  0]], dtype=float)
+adj_mat_prior = np.array([[0,  0],
+                          [0,  0]], dtype=float)
 
 
 # Transition function
@@ -68,8 +66,8 @@ def env(accuracy=1e-15):
     # Define the rescue team
     r1 = agent(0, 'r', 3, Row_num, 1, [0, 0], num_Acts, Row_num, Col_num)
     r2 = agent(1, 'r', 3, Row_num, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
-    s3 = agent(2, 's', 4, 4, 1, [row_lim, 0], num_Acts, Row_num, Col_num)
-    s4 = agent(3, 's', 4, 4, 1, [0, col_lim], num_Acts, Row_num, Col_num)
+    # s3 = agent(2, 's', 4, 4, 1, [row_lim, 0], num_Acts, Row_num, Col_num)
+    # s4 = agent(3, 's', 4, 4, 1, [0, col_lim], num_Acts, Row_num, Col_num)
     # rs5 = agent(4, 'r', 4, Row_num, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
 
     # Define the victims
@@ -80,7 +78,7 @@ def env(accuracy=1e-15):
     # v5 = agent(4, 'v', 0, 0, 1, [int(Row_num / 2) - 4, int(Col_num / 2) - 4], num_Acts, Row_num, Col_num)
 
     # List of objects
-    rescue_team = [r1, r2, s3, s4]
+    rescue_team = [r1, r2]
     victims = [v1, v2]
     VFD_list = []
     num_just_scouts = 0
@@ -92,11 +90,11 @@ def env(accuracy=1e-15):
         # Count the number of just scouts
         if agent.Role == 's':
             num_just_scouts += 1
-    eps = 0
+    # eps = 0
     rescue_flags = []
     tic = time.time()
-    while True:
-
+    # while True:
+    for eps in range(NUM_EPISODES):
         rescue_team_Hist = rescue_team.copy()
         victims_Hist = victims.copy()
         adj_mat = adj_mat_prior.copy()
@@ -109,7 +107,7 @@ def env(accuracy=1e-15):
         for victim in victims:
             victims_idx.append(victim.id)
 
-        eps += 1
+        # eps += 1
 
         # Reset the agents flags, positions, etc
         for agent in rescue_team:
@@ -240,34 +238,40 @@ def env(accuracy=1e-15):
                             # Remove the victim from the list
                             if not victim.Finish:
                                 victims[victim.id] = victim
-                                victims_Hist = victim.victim_rescued(rescue_team_curr_pos_list,
+                                victims_Hist = victim.victim_rescued(rescue_team_old_pos_list,
+                                                                     rescue_team_curr_pos_list,
                                                                      rescue_team_role_list,
                                                                      victim, victims_Hist)
                                 if victim.Finish and victim.First:
                                     victim.Steps.append(t_step)
                                     victim.First = False
                                     break  # Rescue more than one victim by an agent
-                        # break     #  More than one agent can rescue a victim
+                        # break  # More than one agent can rescue a victim
             # print(rescue_team_Hist, '\n', victims_Hist)
-            if len(rescue_team_Hist) == num_just_scouts or len(victims_Hist) == 0:
+            if len(rescue_team_Hist) == num_just_scouts and len(victims_Hist) == 0:
                 print(f'In episode {eps}, all of the victims were rescued in {t_step} steps')
                 break
+            # Update the rescue team positions
+            for agent in rescue_team_Hist:
+                agent.old_Pos = agent.curr_Pos
+            # Victims' actions and positions
             for victim in victims_Hist:
                 # Actions for the victims
                 victim.action = np.random.choice(ACTIONS)
                 # Victims next positions
                 victim.curr_Pos = movement(victim.old_Pos, victim.action, victim.Speed)
                 # Update the victims position
-                if not victim.Finish:
-                    victim.old_Pos = victim.curr_Pos
+                victim.old_Pos = victim.curr_Pos
+
         # Check for the proper number of episodes
-        convergence_flag = []
-        for agent in rescue_team:
-            convergence_flag.append(agent.convergence_check(accuracy))
-        if all(convergence_flag):
-            break
-    for agent in rescue_team:
-        agent.Traj.append(agent.curr_Pos)
+        # convergence_flag = []
+        # for agent in rescue_team:
+        #     convergence_flag.append(agent.convergence_check(accuracy))
+        # if all(convergence_flag):
+        #     break
+    # Add agents last pos in the trajectory
+    # for agent in rescue_team:
+    #     agent.Traj.append(agent.curr_Pos)
     rescue_team_Traj = []
     rescue_team_RewSum = []
     rescue_team_Steps = []
@@ -303,9 +307,9 @@ def env(accuracy=1e-15):
 (rescue_team_Traj,
  rescue_team_RewSum, rescue_team_Steps,
  rescue_team_RewSum_seen, rescue_team_Steps_seen,
- rescue_team_Q, victims_Traj, VFD_list, rescue_team_roles) = env(accuracy=1e-8)
+ rescue_team_Q, victims_Traj, VFD_list, rescue_team_roles) = env(accuracy=1e-7)
 
-with h5py.File('multi_agent_Q_learning_2R_2S.hdf5', 'w') as f:
+with h5py.File('multi_agent_Q_learning_2R_NS.hdf5', 'w') as f:
     for idx, traj in enumerate(rescue_team_Traj):
         f.create_dataset(f'RS{idx}_trajectory', data=traj)
     for idx, rew_sum in enumerate(rescue_team_RewSum):
