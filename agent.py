@@ -41,9 +41,9 @@ class Agent:
         self.Q = np.zeros(((2 * self.max_VisualField + 1) ** 2 + 1, self.num_actions))
         self.Q_hist = self.Q
 
-    def reset(self):
-        self.old_Pos = self.init_pos
-        self.curr_Pos = self.init_pos
+    def reset(self, pos):
+        self.old_Pos = pos
+        self.curr_Pos = pos
         self.old_Sensation = [np.nan, np.nan]
         self.curr_Sensation = [np.nan, np.nan]
         self.CanSeeIt = False

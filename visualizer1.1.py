@@ -5,9 +5,9 @@ import h5py
 
 
 plt.rcParams.update({'font.size': 22})
-file_name = 'multi_agent_Q_learning_2R_NS.hdf5'
+file_name = 'multi_agent_Q_learning_2R_2S_A2A.hdf5'
 
-run_animate = True
+run_animate = False
 
 rescue_team_Traj = []
 rescue_team_RewSum = []

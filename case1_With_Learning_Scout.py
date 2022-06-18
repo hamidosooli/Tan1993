@@ -10,7 +10,7 @@ LEFT = 3
 ACTIONS = [FORWARD, BACKWARD, RIGHT, LEFT]
 nA = len(ACTIONS)
 NUM_RUNS = 100
-NUM_EPISODES = 500
+NUM_EPISODES = 2000
 Hunter_VFD = 2  # Hunter's visual field depth
 Scout_VFD = 2
 gamma = .9
@@ -136,9 +136,9 @@ def rl_agent(beta=0.8, epsilon=1e-5):
         can_see_it = False
         can_see_it_scout = False
         default_sensation = [np.nan, np.nan]
-        hunter_pos = [0, 9]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
-        scout_pos = [6, 3]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
-        prey_pos = [9, 0]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
+        hunter_pos = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
+        scout_pos = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
+        prey_pos = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
 
         T_hunter = []
         T_scout = []
@@ -185,11 +185,11 @@ def rl_agent(beta=0.8, epsilon=1e-5):
             hunter_pos_prime = movement(hunter_pos, hunter_action)
             scout_pos_prime = movement(scout_pos, scout_action)
 
-            # if idx == (2 * Row_num + 1) ** 2:
-            #     hunter_pos_prime = smart_move(wereHere_hunter, hunter_pos, hunter_pos_prime)
-            #
-            # if idx_scout == (2 * Scout_VFD + 1) ** 2:
-            #     scout_pos_prime = smart_move(wereHere_scout, scout_pos, scout_pos_prime)
+            if idx == (2 * Row_num + 1) ** 2:
+                hunter_pos_prime = smart_move(wereHere_hunter, hunter_pos, hunter_pos_prime)
+
+            if idx_scout == (2 * Scout_VFD + 1) ** 2:
+                scout_pos_prime = smart_move(wereHere_scout, scout_pos, scout_pos_prime)
 
             scout2hunter_prime = np.subtract(scout_pos_prime, hunter_pos_prime)
 
@@ -236,8 +236,8 @@ def rl_agent(beta=0.8, epsilon=1e-5):
 
             hunter_pos = hunter_pos_prime
             scout_pos = scout_pos_prime
-            if t_step % 2 == 0:
-                prey_pos = prey_pos_prime
+            # if t_step % 2 == 0:
+            prey_pos = prey_pos_prime
         # if (np.abs(np.sum(Q - hist_Q) / (np.shape(Q)[0] * np.shape(Q)[1])) <= epsilon and
         #     np.abs(np.sum(Q_scout - hist_Q_scout) / (np.shape(Q_scout)[0] * np.shape(Q_scout)[1])) <= epsilon):
         #     break
@@ -262,9 +262,9 @@ see_steps_runs = []
     # steps_runs.append(steps)
     # see_steps_runs.append(see_steps)
 
-# filename = 'Tan1993_case1_with_learning_scout_normal_speed_multi.hdf5'
+filename = 'Tan1993_case1_with_learning_scout_normal_speed_multi.hdf5'
 # filename = 'Tan1993_case1_with_learning_scout_fixed_multi.hdf5'
-filename = 'Tan1993_case1_with_learning_scout_slow_multi.hdf5'
+# filename = 'Tan1993_case1_with_learning_scout_slow_multi.hdf5'
 
 with h5py.File(filename, "w") as f:
     f.create_dataset('T_hunter', data=T_hunter)
