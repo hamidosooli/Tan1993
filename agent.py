@@ -57,12 +57,13 @@ class Agent:
         self.wereHere = np.ones_like(self.wereHere)
 
     def smart_move(self, pos, idx, wereHere):
-        self.wereHere[pos[0], pos[1]] = 0
+
         if idx == (2 * self.max_VisualField + 1) ** 2:
             if len(np.argwhere(wereHere)) > 0:
                 for loc in np.argwhere(wereHere):
                     if np.sqrt((loc[0] - self.old_Pos[0]) ** 2 + (loc[1] - self.old_Pos[1]) ** 2) == 1:
                         self.curr_Pos = loc
+                        self.wereHere[self.curr_Pos[0], self.curr_Pos[1]] = 0
                         break
                     else:
                         continue
@@ -114,18 +115,17 @@ class Agent:
 
         return int(index)
 
-    def rescue_accomplished(self, rescue_team_Hist, agent, adj_mat, rescue_flags):
+    def rescue_accomplished(self, rescue_team_Hist, agent, adj_mat):
         if (((self.old_Sensation[0] == 0 and self.old_Sensation[1] == 0) or
              (self.curr_Sensation[0] == 0 and self.curr_Sensation[1] == 0)) and
                 'r' in self.Role):
             self.Finish = True
-            rescue_flags.append(self.Finish)
             adj_mat = np.delete(adj_mat, rescue_team_Hist.index(agent), 0)
             adj_mat = np.delete(adj_mat, rescue_team_Hist.index(agent), 1)
 
             rescue_team_Hist.remove(agent)
 
-        return rescue_team_Hist, adj_mat, rescue_flags
+        return rescue_team_Hist, adj_mat
 
     def victim_rescued(self, rescue_team_old_pos_list, rescue_team_curr_pos_list,
                        rescue_team_role_list, victim, victims_Hist):

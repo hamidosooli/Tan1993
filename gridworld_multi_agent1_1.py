@@ -16,9 +16,9 @@ Row_num = 20  # number of rows
 # define colors
 bg_color = pg.Color(255, 255, 255)
 line_color = pg.Color(128, 128, 128)
-vfdr_color = pg.Color(8, 136, 8, 128)
-vfds_color = pg.Color(255, 165, 0, 128)
-vfdrs_color = pg.Color(173, 216, 230, 128)
+vfdr_color = pg.Color(8, 136, 8, 0)
+vfds_color = pg.Color(255, 165, 0, 0)
+vfdrs_color = pg.Color(173, 216, 230, 0)
 
 def draw_grid(scr):
     '''a function to draw gridlines and other objects'''

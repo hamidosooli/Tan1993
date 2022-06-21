@@ -3,9 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 
+# exp_name = '2R_NS'
+# exp_name = '2R_2S'
+# exp_name = '2R_2S_A2A'
+exp_name = '5R_5S'
 
 plt.rcParams.update({'font.size': 22})
-file_name = 'multi_agent_Q_learning_2R_NS.hdf5'
+file_name = f'multi_agent_Q_learning_{exp_name}.hdf5'
 
 run_animate = True
 

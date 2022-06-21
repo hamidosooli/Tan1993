@@ -30,6 +30,7 @@ adj_mat_prior = np.array([[0,  0,  1,  1],
                           [0,  0,  1,  1],
                           [0,  0,  0,  0],
                           [0,  0,  0,  0]], dtype=float)
+exp_name = '2R_2S_A2A'
 
 
 # Transition function
@@ -217,15 +218,19 @@ def env(accuracy=1e-15):
                 agent.curr_Index = agent.sensation2index(agent.curr_Sensation, agent.max_VisualField)
 
                 # Rewarding the rescue team
-                agent.reward = reward_func(agent.curr_Sensation)
+                if reward_func(agent.curr_Sensation) >= reward_func(agent.old_Sensation):
+                    agent.reward = reward_func(agent.curr_Sensation)
+                else:
+                    reward_func(agent.old_Sensation)
 
                 # Q learning for the rescue team
                 agent.Q = q_learning(agent.Q, agent.old_Index, agent.curr_Index, agent.reward, agent.action, alpha=0.8)
 
                 # Check to see if the team rescued any victim
                 if not agent.Finish:
-                    rescue_team_Hist, adj_mat, rescue_flags = agent.rescue_accomplished(rescue_team_Hist,
-                                                                                        agent, adj_mat, rescue_flags)
+                    rescue_team_Hist, adj_mat = agent.rescue_accomplished(rescue_team_Hist, agent, adj_mat)
+                    # print(agent.id, agent.old_Sensation, agent.curr_Sensation, agent.old_Pos, agent.curr_Pos, agent.Finish)
+                    # print(agent.old_Sensation, agent.curr_Sensation, agent.Finish)
                     # Keeping track of the rewards
                     agent.RewHist.append(agent.reward)
                     if agent.CanSeeIt:
@@ -238,6 +243,7 @@ def env(accuracy=1e-15):
                         rescue_team[agent.id] = agent
                         agent.First = False
                         for victim in victims_Hist:
+                            # print(f'victim op{victim.old_Pos}, victim cp{victim.curr_Pos}')
                             # Check to see if the victim rescued by the team
                             # Keep track of the steps
                             # Remove the victim from the list
@@ -256,9 +262,11 @@ def env(accuracy=1e-15):
             if len(rescue_team_Hist) == num_just_scouts and len(victims_Hist) == 0:
                 print(f'In episode {eps+1}, all of the victims were rescued in {t_step} steps')
                 break
+
             # Update the rescue team positions
             for agent in rescue_team_Hist:
                 agent.old_Pos = agent.curr_Pos
+
             # Victims' actions and positions
             for victim in victims_Hist:
                 # Actions for the victims
@@ -274,11 +282,13 @@ def env(accuracy=1e-15):
         #     convergence_flag.append(agent.convergence_check(accuracy))
         # if all(convergence_flag):
         #     break
+
     # Add agents last pos in the trajectory
     for agent in rescue_team:
         for victim in victims:
             if agent.curr_Pos[0] == victim.old_Pos[0] and agent.curr_Pos[1] == victim.old_Pos[1]:
                 agent.Traj.append(agent.curr_Pos)
+
     rescue_team_Traj = []
     rescue_team_RewSum = []
     rescue_team_Steps = []
@@ -318,6 +328,7 @@ if Multi_Runs:
     rescue_team_RewSum_seen_Run = []
     rescue_team_Steps_seen_Run = []
     for run in range(NUM_RUNS):
+        print(f'Run {run + 1} of {NUM_RUNS}')
         (rescue_team_Traj,
          rescue_team_RewSum, rescue_team_Steps,
          rescue_team_RewSum_seen, rescue_team_Steps_seen,
@@ -333,7 +344,7 @@ if Multi_Runs:
     rescue_team_RewSum_seen_Run = np.mean(np.asarray(rescue_team_RewSum_seen_Run), axis=0)
     rescue_team_Steps_seen_Run = np.mean(np.asarray(rescue_team_Steps_seen_Run), axis=0)
 
-    with h5py.File('multi_agent_Q_learning_100_runs_2R_NS.hdf5', 'w') as f:
+    with h5py.File(f'multi_agent_Q_learning_{exp_name}_{str(NUM_RUNS)}Runs.hdf5', 'w') as f:
         for idx, rew_sum in enumerate(rescue_team_RewSum_Run):
             f.create_dataset(f'RS{idx}_reward', data=rew_sum)
         for idx, steps in enumerate(rescue_team_Steps_Run):
@@ -351,7 +362,7 @@ else:
      rescue_team_RewSum_seen, rescue_team_Steps_seen,
      rescue_team_Q, victims_Traj, VFD_list, rescue_team_roles) = env(accuracy=1e-7)
 
-    with h5py.File('multi_agent_Q_learning_2R_2S_A2A_100Runs.hdf5', 'w') as f:
+    with h5py.File(f'multi_agent_Q_learning_{exp_name}.hdf5', 'w') as f:
         for idx, traj in enumerate(rescue_team_Traj):
             f.create_dataset(f'RS{idx}_trajectory', data=traj)
         for idx, rew_sum in enumerate(rescue_team_RewSum):

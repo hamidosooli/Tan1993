@@ -10,7 +10,7 @@ from agent import Agent
 
 NUM_EPISODES = 2000
 NUM_RUNS = 100
-Multi_Runs = True
+Multi_Runs = False
 # Actions
 FORWARD = 0
 BACKWARD = 1
@@ -20,17 +20,28 @@ ACTIONS = [FORWARD, BACKWARD, RIGHT, LEFT]
 num_Acts = len(ACTIONS)
 
 # Environment dimensions
-Row_num = 20
-Col_num = 20
+Row_num = 40
+Col_num = 40
 row_lim = Row_num - 1
 col_lim = Col_num - 1
 
-#                          r1  r2  s3  s4
-adj_mat_prior = np.array([[0,  0,  1,  0],
-                          [0,  0,  0,  1],
-                          [0,  0,  0,  0],
-                          [0,  0,  0,  0]], dtype=float)
-exp_name = '2R_2S'
+#                          r1  r2  r3  r4  r5  rs6 rs7 rs8 rs9 rs10 s11 s12 s13 s14 s15
+adj_mat_prior = np.array([[0,  0,  0,  0,  0,  1,  0,  0,  0,  0,   1,  0,  0,  0,  0],
+                          [0,  0,  0,  0,  0,  0,  1,  0,  0,  0,   0,  1,  0,  0,  0],
+                          [0,  0,  0,  0,  0,  0,  0,  1,  0,  0,   0,  0,  1,  0,  0],
+                          [0,  0,  0,  0,  0,  0,  0,  0,  1,  0,   0,  0,  0,  1,  0],
+                          [0,  0,  0,  0,  0,  0,  0,  0,  0,  1,   0,  0,  0,  0,  1],
+                          [0,  0,  0,  0,  0,  0,  1,  0,  0,  0,   0,  0,  0,  0,  0],
+                          [0,  0,  0,  0,  0,  0,  0,  1,  0,  0,   0,  0,  0,  0,  0],
+                          [0,  0,  0,  0,  0,  0,  0,  0,  1,  0,   0,  0,  0,  0,  0],
+                          [0,  0,  0,  0,  0,  0,  0,  0,  0,  1,   0,  0,  0,  0,  0],
+                          [0,  0,  0,  0,  0,  1,  0,  0,  0,  0,   0,  0,  0,  0,  0],
+                          [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,  0],
+                          [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,  0],
+                          [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,  0],
+                          [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,  0],
+                          [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,  0]], dtype=float)
+exp_name = '5R_5RS_5S'
 
 
 # Transition function
@@ -70,22 +81,36 @@ def env(accuracy=1e-15):
     agent = Agent
 
     # Define the rescue team
-    r1 = agent(0, 'r', 3, Row_num, 1, [0, 0], num_Acts, Row_num, Col_num)
-    r2 = agent(1, 'r', 3, Row_num, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
-    s3 = agent(2, 's', 4, 4, 1, [row_lim, 0], num_Acts, Row_num, Col_num)
-    s4 = agent(3, 's', 4, 4, 1, [0, col_lim], num_Acts, Row_num, Col_num)
-    # rs5 = agent(4, 'r', 4, Row_num, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
-
+    r1 = agent(0, 'r', 2, Row_num, 1, [0, 0], num_Acts, Row_num, Col_num)
+    r2 = agent(1, 'r', 2, Row_num, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
+    r3 = agent(2, 'r', 2, Row_num, 1, [row_lim, 0], num_Acts, Row_num, Col_num)
+    r4 = agent(3, 'r', 2, Row_num, 1, [0, col_lim], num_Acts, Row_num, Col_num)
+    r5 = agent(4, 'r', 2, Row_num, 1, [0, int(Col_num / 2)], num_Acts, Row_num, Col_num)
+    rs6 = agent(5, 'rs', 3, Row_num, 1, [int(Row_num / 2), 0], num_Acts, Row_num, Col_num)
+    rs7 = agent(6, 'rs', 3, Row_num, 1, [int(Row_num / 2), col_lim], num_Acts, Row_num, Col_num)
+    rs8 = agent(7, 'rs', 3, Row_num, 1, [row_lim, int(Col_num / 2)], num_Acts, Row_num, Col_num)
+    rs9 = agent(8, 'rs', 3, Row_num, 1, [4, 2], num_Acts, Row_num, Col_num)
+    rs10 = agent(9, 'rs', 3, Row_num, 1, [4, 4], num_Acts, Row_num, Col_num)
+    s11 = agent(10, 's', 4, 4, 2, [4, 6], num_Acts, Row_num, Col_num)
+    s12 = agent(11, 's', 4, 4, 2, [4, 8], num_Acts, Row_num, Col_num)
+    s13 = agent(12, 's', 4, 4, 2, [4, 10], num_Acts, Row_num, Col_num)
+    s14 = agent(13, 's', 4, 4, 2, [4, 12], num_Acts, Row_num, Col_num)
+    s15 = agent(14, 's', 4, 4, 2, [4, 14], num_Acts, Row_num, Col_num)
     # Define the victims
     v1 = agent(0, 'v', 0, 0, 1, [int(Row_num / 2) - 2, int(Col_num / 2) - 2], num_Acts, Row_num, Col_num)
     v2 = agent(1, 'v', 0, 0, 1, [int(Row_num / 2) + 2, int(Col_num / 2) + 2], num_Acts, Row_num, Col_num)
-    # v3 = agent(2, 'v', 0, 0, 1, [int(Row_num / 2) - 2, int(Col_num / 2) - 2], num_Acts, Row_num, Col_num)
-    # v4 = agent(3, 'v', 0, 0, 1, [int(Row_num / 2) + 4, int(Col_num / 2) + 4], num_Acts, Row_num, Col_num)
-    # v5 = agent(4, 'v', 0, 0, 1, [int(Row_num / 2) - 4, int(Col_num / 2) - 4], num_Acts, Row_num, Col_num)
+    v3 = agent(2, 'v', 0, 0, 1, [int(Row_num / 2) - 4, int(Col_num / 2) - 4], num_Acts, Row_num, Col_num)
+    v4 = agent(3, 'v', 0, 0, 1, [int(Row_num / 2) + 4, int(Col_num / 2) + 4], num_Acts, Row_num, Col_num)
+    v5 = agent(4, 'v', 0, 0, 1, [int(Row_num / 2) - 6, int(Col_num / 2) - 6], num_Acts, Row_num, Col_num)
+    v6 = agent(5, 'v', 0, 0, 1, [int(Row_num / 2) + 6, int(Col_num / 2) + 6], num_Acts, Row_num, Col_num)
+    v7 = agent(6, 'v', 0, 0, 1, [int(Row_num / 2) - 8, int(Col_num / 2) - 8], num_Acts, Row_num, Col_num)
+    v8 = agent(7, 'v', 0, 0, 1, [int(Row_num / 2) + 8, int(Col_num / 2) + 8], num_Acts, Row_num, Col_num)
+    v9 = agent(8, 'v', 0, 0, 1, [int(Row_num / 2) - 10, int(Col_num / 2) - 10], num_Acts, Row_num, Col_num)
+    v10 = agent(9, 'v', 0, 0, 1, [int(Row_num / 2) + 10, int(Col_num / 2) + 10], num_Acts, Row_num, Col_num)
 
     # List of objects
-    rescue_team = [r1, r2, s3, s4]
-    victims = [v1, v2]
+    rescue_team = [r1, r2, r3, r4, r5, rs6, rs7, rs8, rs9, rs10, s11, s12, s13, s14, s15]
+    victims = [v1, v2, v3, v4, v5, v6, v7, v8, v9, v10]
     VFD_list = []
     num_just_scouts = 0
     rescue_team_roles = []
@@ -257,7 +282,7 @@ def env(accuracy=1e-15):
                                     victim.Steps.append(t_step)
                                     victim.First = False
                                     break  # Rescue more than one victim by an agent
-                        # break  # More than one agent can rescue a victim
+                        break  # More than one agent can rescue a victim
             # print(rescue_team_Hist, '\n', victims_Hist)
             if len(rescue_team_Hist) == num_just_scouts and len(victims_Hist) == 0:
                 print(f'In episode {eps+1}, all of the victims were rescued in {t_step} steps')
@@ -328,7 +353,7 @@ if Multi_Runs:
     rescue_team_RewSum_seen_Run = []
     rescue_team_Steps_seen_Run = []
     for run in range(NUM_RUNS):
-        print(f'Run {run + 1} of {NUM_RUNS}')
+        print(f'Run {run+1} of {NUM_RUNS}')
         (rescue_team_Traj,
          rescue_team_RewSum, rescue_team_Steps,
          rescue_team_RewSum_seen, rescue_team_Steps_seen,

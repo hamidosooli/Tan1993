@@ -165,11 +165,12 @@ def play(hunter_init_loc, scout_init_loc, prey_init_loc):
             scout_pos_prime = smart_move(wereHere_scout, scout_pos, scout_pos_prime)
 
         scout2hunter_prime = np.subtract(scout_pos_prime, hunter_pos_prime)
-
-        scout_sensation_prime_step1 = np.subtract(prey_pos, scout_pos_prime)
+        prey_action = np.random.choice(ACTIONS)
+        prey_pos_prime = movement(prey_pos, prey_action)
+        scout_sensation_prime_step1 = np.subtract(prey_pos_prime, scout_pos_prime)
         scout_sensation_prime = update_sensation_scout(scout_sensation_prime_step1)
 
-        hunter_sensation_prime_step1 = np.subtract(prey_pos, hunter_pos_prime)
+        hunter_sensation_prime_step1 = np.subtract(prey_pos_prime, hunter_pos_prime)
         hunter_sensation_prime = update_sensation(hunter_sensation_prime_step1,
                                                   scout_sensation_prime,
                                                   scout2hunter_prime)
@@ -180,17 +181,16 @@ def play(hunter_init_loc, scout_init_loc, prey_init_loc):
         R.append(re)
         R_scout.append(re_scout)
 
-        if hunter_sensation == [0, 0] or hunter_sensation_prime == [0, 0]:
+        if hunter_sensation_prime == [0, 0]:
             T_hunter.append(hunter_pos_prime)
             break
 
-        # prey_action = np.random.choice(ACTIONS)
-        # prey_pos_prime = movement(prey_pos, prey_action)
+
 
         hunter_pos = hunter_pos_prime
         scout_pos = scout_pos_prime
         # if t_step % 2 == 0:
-        # prey_pos = prey_pos_prime
+        prey_pos = prey_pos_prime
 
     return R, T_hunter, T_scout, T_prey
 

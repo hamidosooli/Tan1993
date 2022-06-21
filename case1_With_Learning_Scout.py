@@ -136,9 +136,9 @@ def rl_agent(beta=0.8, epsilon=1e-5):
         can_see_it = False
         can_see_it_scout = False
         default_sensation = [np.nan, np.nan]
-        hunter_pos = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
-        scout_pos = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
-        prey_pos = [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
+        hunter_pos = [0, 9]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
+        scout_pos = [6, 3]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
+        prey_pos = [9, 0]  # [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))]
 
         T_hunter = []
         T_scout = []
@@ -193,6 +193,7 @@ def rl_agent(beta=0.8, epsilon=1e-5):
 
             scout2hunter_prime = np.subtract(scout_pos_prime, hunter_pos_prime)
 
+
             scout_sensation_prime_step1 = np.subtract(prey_pos, scout_pos_prime)
             scout_sensation_prime = update_sensation_scout(scout_sensation_prime_step1)
 
@@ -218,7 +219,7 @@ def rl_agent(beta=0.8, epsilon=1e-5):
             Q_scout[idx_scout, scout_action] += beta * (re_scout + gamma * np.max(Q_scout[idx_scout_prime, :]) -
                                                         Q_scout[idx_scout, scout_action])
 
-            if hunter_sensation == [0, 0] or hunter_sensation_prime == [0, 0]:
+            if hunter_sensation_prime == [0, 0]:
 
                 steps.append(t_step+1)
                 see_steps.append(see_t_step+1)
@@ -231,13 +232,15 @@ def rl_agent(beta=0.8, epsilon=1e-5):
 
                 break
 
-            prey_action = np.random.choice(ACTIONS)
-            prey_pos_prime = movement(prey_pos, prey_action)
+
 
             hunter_pos = hunter_pos_prime
             scout_pos = scout_pos_prime
             # if t_step % 2 == 0:
             prey_pos = prey_pos_prime
+
+            prey_action = np.random.choice(ACTIONS)
+            prey_pos_prime = movement(prey_pos, prey_action)
         # if (np.abs(np.sum(Q - hist_Q) / (np.shape(Q)[0] * np.shape(Q)[1])) <= epsilon and
         #     np.abs(np.sum(Q_scout - hist_Q_scout) / (np.shape(Q_scout)[0] * np.shape(Q_scout)[1])) <= epsilon):
         #     break
