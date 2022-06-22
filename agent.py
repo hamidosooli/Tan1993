@@ -34,6 +34,8 @@ class Agent:
         self.Steps_seen = []  # Keeps track of the steps after receiving first data
 
         self.num_actions = num_actions
+        self.num_rows = num_rows
+        self.num_cols = num_cols
         self.t_step_seen = 0
         self.action = None
         self.reward = None
@@ -56,7 +58,7 @@ class Agent:
         self.Traj = []
         self.wereHere = np.ones_like(self.wereHere)
 
-    def smart_move(self, pos, idx, wereHere):
+    def smart_move(self, idx, wereHere):
 
         if idx == (2 * self.max_VisualField + 1) ** 2:
             if len(np.argwhere(wereHere)) > 0:
@@ -67,6 +69,23 @@ class Agent:
                         break
                     else:
                         continue
+
+    def random_walk(self, idx, pos, speed):
+        row_lim = self.num_rows - 1
+        col_lim = self.num_cols - 1
+        row = pos[0]
+        col = pos[1]
+        if idx == (2 * self.max_VisualField + 1) ** 2:
+            self.action = np.random.randint(self.num_actions)
+
+            if self.action == 0:  # up
+                self.curr_Pos = [max(row - speed, 0), col]
+            elif self.action == 1:  # down
+                self.curr_Pos = [min(row + speed, row_lim), col]
+            elif self.action == 2:  # right
+                self.curr_Pos = [row, min(col + speed, col_lim)]
+            elif self.action == 3:  # left
+                self.curr_Pos = [row, max(col - speed, 0)]
 
     def update_sensation(self, index, raw_sensation, sensation_evaluate, pos2pos, net_adj_mat, adj_mat):
 

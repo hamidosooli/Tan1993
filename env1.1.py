@@ -10,7 +10,7 @@ from agent import Agent
 
 NUM_EPISODES = 2000
 NUM_RUNS = 100
-Multi_Runs = True
+Multi_Runs = False
 # Actions
 FORWARD = 0
 BACKWARD = 1
@@ -68,8 +68,8 @@ def env(accuracy=1e-15):
     agent = Agent
 
     # Define the rescue team
-    r1 = agent(0, 'r', 3, 3, 1, [0, 0], num_Acts, Row_num, Col_num)
-    r2 = agent(1, 'r', 3, 3, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
+    r1 = agent(0, 'r', 3, 3, 1, [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))], num_Acts, Row_num, Col_num)
+    r2 = agent(1, 'r', 3, 3, 1, [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))], num_Acts, Row_num, Col_num)
     # s3 = agent(2, 's', 4, 4, 1, [row_lim, 0], num_Acts, Row_num, Col_num)
     # s4 = agent(3, 's', 4, 4, 1, [0, col_lim], num_Acts, Row_num, Col_num)
     # rs5 = agent(4, 'r', 4, Row_num, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
@@ -186,7 +186,8 @@ def env(accuracy=1e-15):
                 agent.curr_Pos = movement(agent.old_Pos, agent.action, agent.Speed)
 
                 # Smart move algorithm
-                agent.smart_move(agent.old_Pos, agent.old_Index, agent.wereHere)
+                # agent.smart_move(agent.old_Pos, agent.old_Index, agent.wereHere)
+                agent.random_walk(agent.old_Index, agent.old_Pos, agent.Speed)
 
                 # List of the current positions for the rescue team members
                 rescue_team_curr_pos_list.append(agent.curr_Pos)
@@ -207,7 +208,6 @@ def env(accuracy=1e-15):
 
             # Calculation of the new sensations for the rescue team (after their movement)
             for agent in rescue_team_Hist:
-                # print(rescue_team_curr_pos_list, '\n', victims_old_pos_list)
                 agent.curr_Sensation = agent.update_sensation(rescue_team_Hist.index(agent),
                                                               curr_raw_sensations, eval_curr_sensations,
                                                               curr_scouts2rescuers, net.adj_mat, adj_mat)
@@ -215,10 +215,7 @@ def env(accuracy=1e-15):
                 agent.curr_Index = agent.sensation2index(agent.curr_Sensation, agent.max_VisualField)
 
                 # Rewarding the rescue team
-                if reward_func(agent.curr_Sensation) >= reward_func(agent.old_Sensation):
-                    agent.reward = reward_func(agent.curr_Sensation)
-                else:
-                    reward_func(agent.old_Sensation)
+                agent.reward = reward_func(agent.curr_Sensation)
 
                 # Q learning for the rescue team
                 agent.Q = q_learning(agent.Q, agent.old_Index, agent.curr_Index, agent.reward, agent.action, alpha=0.8)
@@ -226,8 +223,6 @@ def env(accuracy=1e-15):
                 # Check to see if the team rescued any victim
                 if not agent.Finish:
                     rescue_team_Hist, adj_mat = agent.rescue_accomplished(rescue_team_Hist, agent, adj_mat)
-                    # print(agent.id, agent.old_Sensation, agent.curr_Sensation, agent.old_Pos, agent.curr_Pos, agent.Finish)
-                    # print(agent.old_Sensation, agent.curr_Sensation, agent.Finish)
                     # Keeping track of the rewards
                     agent.RewHist.append(agent.reward)
                     if agent.CanSeeIt:
@@ -240,7 +235,6 @@ def env(accuracy=1e-15):
                         rescue_team[agent.id] = agent
                         agent.First = False
                         for victim in victims_Hist:
-                            # print(f'victim op{victim.old_Pos}, victim cp{victim.curr_Pos}')
                             # Check to see if the victim rescued by the team
                             # Keep track of the steps
                             # Remove the victim from the list
@@ -254,8 +248,6 @@ def env(accuracy=1e-15):
                                     victim.Steps.append(t_step)
                                     victim.First = False
                                     break  # Rescue more than one victim by an agent
-                        # break  # More than one agent can rescue a victim
-            # print(rescue_team_Hist, '\n', victims_Hist)
             if len(rescue_team_Hist) == num_just_scouts and len(victims_Hist) == 0:
                 print(f'In episode {eps+1}, all of the victims were rescued in {t_step} steps')
                 break
