@@ -3,15 +3,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 
-# exp_name = '2R_NS'
+exp_name = '2R_NS'
 # exp_name = '2R_2S'
-exp_name = '2R_2S_A2A'
+# exp_name = '2R_2S_A2A'
 # exp_name = '5R_5S'
-
+num_scouts = 0
 plt.rcParams.update({'font.size': 22})
-file_name = f'multi_agent_Q_learning_{exp_name}.hdf5'
+file_name = f'multi_agent_Q_learning_{exp_name}_100Runs.hdf5'
 
-run_animate = True
+run_animate = False
 
 rescue_team_Traj = []
 rescue_team_RewSum = []
@@ -23,16 +23,16 @@ victims_Traj = []
 
 with h5py.File(file_name, 'r') as f:
 
-    for idx in range(len(f['RS_VFD'])):
+    for idx in range(len(f['RS_VFD']) - num_scouts):
 
-        rescue_team_Traj.append(f[f'RS{idx}_trajectory'])
+        # rescue_team_Traj.append(f[f'RS{idx}_trajectory'])
         rescue_team_RewSum.append(f[f'RS{idx}_reward'])
         rescue_team_Steps.append(f[f'RS{idx}_steps'])
         rescue_team_RewSum_seen.append(f[f'RS{idx}_reward_seen'])
         rescue_team_Steps_seen.append(f[f'RS{idx}_steps_seen'])
-        rescue_team_Q.append(f[f'RS{idx}_Q'])
-    for idx in range(f['victims_num'][0]):
-        victims_Traj.append(f[f'victim{idx}_trajectory'])
+    #     rescue_team_Q.append(f[f'RS{idx}_Q'])
+    # for idx in range(f['victims_num'][0]):
+    #     victims_Traj.append(f[f'victim{idx}_trajectory'])
 
     if run_animate:
         animate(np.asarray(rescue_team_Traj), np.asarray(victims_Traj),
@@ -41,7 +41,7 @@ with h5py.File(file_name, 'r') as f:
     rescue_team_legends = []
 
     plt.figure('reward')
-    for idx in range(len(f['RS_VFD'])):
+    for idx in range(len(f['RS_VFD']) - num_scouts):
         plt.plot(np.asarray(rescue_team_RewSum[idx]))
         rescue_team_legends.append(f'Agent {idx+1}')
     plt.xlabel('Number of episodes')
@@ -49,21 +49,21 @@ with h5py.File(file_name, 'r') as f:
     plt.legend(rescue_team_legends)
 
     plt.figure('reward_seen')
-    for idx in range(len(f['RS_VFD'])):
+    for idx in range(len(f['RS_VFD']) - num_scouts):
         plt.plot(np.asarray(rescue_team_RewSum_seen[idx]))
     plt.xlabel('Number of Episodes')
     plt.ylabel('Rescue Team Rewards During Victim Visit')
     plt.legend(rescue_team_legends)
 
     plt.figure('steps')
-    for idx in range(len(f['RS_VFD'])):
+    for idx in range(len(f['RS_VFD']) - num_scouts):
         plt.plot(np.asarray(rescue_team_Steps[idx]))
     plt.xlabel('Number of Episodes')
     plt.ylabel('Rescue Team Total Steps')
     plt.legend(rescue_team_legends)
 
     plt.figure('steps_seen')
-    for idx in range(len(f['RS_VFD'])):
+    for idx in range(len(f['RS_VFD']) - num_scouts):
         plt.plot(np.asarray(rescue_team_Steps_seen[idx]))
     plt.xlabel('Number of Episodes')
     plt.ylabel('Rescue Team Steps During Victim Visit')

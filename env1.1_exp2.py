@@ -10,7 +10,7 @@ from agent import Agent
 
 NUM_EPISODES = 2000
 NUM_RUNS = 100
-Multi_Runs = False
+Multi_Runs = True
 # Actions
 FORWARD = 0
 BACKWARD = 1
