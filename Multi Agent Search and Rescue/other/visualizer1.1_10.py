@@ -13,7 +13,7 @@ rescue_team_legends = []
 plt.figure('reward', dpi=300)
 for num_s in range(1, 11):
     exp_name = '1R_' + str(num_s) + 'S_1V'
-    file_name = f'multi_agent_Q_learning_{exp_name}_100Runs.hdf5'
+    file_name = f'../h5py data/multi_agent_Q_learning_{exp_name}_100Runs.hdf5'
     f = h5py.File(file_name, 'r')
     rescue_team_legends.append(f'{exp_name}')
 
@@ -29,7 +29,7 @@ plt.savefig('reward.eps')
 plt.figure('reward_seen', dpi=300)
 for num_s in range(1, 11):
     exp_name = '1R_' + str(num_s) + 'S_1V'
-    file_name = f'multi_agent_Q_learning_{exp_name}_100Runs.hdf5'
+    file_name = f'../h5py data/multi_agent_Q_learning_{exp_name}_100Runs.hdf5'
     f = h5py.File(file_name, 'r')
     rescue_team_legends.append(f'{exp_name}')
 
@@ -45,7 +45,7 @@ plt.savefig('reward_seen.eps')
 plt.figure('steps', dpi=300)
 for num_s in range(1, 11):
     exp_name = '1R_' + str(num_s) + 'S_1V'
-    file_name = f'multi_agent_Q_learning_{exp_name}_100Runs.hdf5'
+    file_name = f'../h5py data/multi_agent_Q_learning_{exp_name}_100Runs.hdf5'
     f = h5py.File(file_name, 'r')
     rescue_team_legends.append(f'{exp_name}')
 
@@ -61,7 +61,7 @@ plt.savefig('steps.eps')
 plt.figure('steps_seen', dpi=300)
 for num_s in range(1, 11):
     exp_name = '1R_' + str(num_s) + 'S_1V'
-    file_name = f'multi_agent_Q_learning_{exp_name}_100Runs.hdf5'
+    file_name = f'../h5py data/multi_agent_Q_learning_{exp_name}_100Runs.hdf5'
     f = h5py.File(file_name, 'r')
     rescue_team_legends.append(f'{exp_name}')
 

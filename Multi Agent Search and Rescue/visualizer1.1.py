@@ -12,7 +12,7 @@ exp_name = '2R_NS'
 # exp_name = '5R_5S'
 
 plt.rcParams.update({'font.size': 22})
-file_name = f'multi_agent_Q_learning_{exp_name}.hdf5'
+file_name = f'../h5py data/multi_agent_Q_learning_{exp_name}.hdf5'
 
 run_animate = True
 
