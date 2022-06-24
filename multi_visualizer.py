@@ -9,7 +9,7 @@ exp_name3 = '2R_2S_A2A'
 # exp_name = '5R_5S'
 # exp_name = '5R_5RS_5S'
 
-plt.rcParams.update({'font.size': 22})
+plt.rcParams.update({'font.size': 12})
 file_name1 = f'multi_agent_Q_learning_{exp_name1}_100Runs.hdf5'
 file_name2 = f'multi_agent_Q_learning_{exp_name2}_100Runs.hdf5'
 file_name3 = f'multi_agent_Q_learning_{exp_name3}_100Runs.hdf5'

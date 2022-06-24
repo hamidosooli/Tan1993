@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-plt.rcParams.update({'font.size': 22})
+plt.rcParams.update({'font.size': 12})
 
 
 nn = 100
@@ -24,6 +24,7 @@ for num_s in range(1, 11):
     plt.legend(rescue_team_legends)
     plt.title('Average Over 100 Runs')
     f.close()
+plt.savefig('reward.eps')
 
 plt.figure('reward_seen', dpi=300)
 for num_s in range(1, 11):
@@ -39,6 +40,7 @@ for num_s in range(1, 11):
     plt.legend(rescue_team_legends)
     plt.title('Average Over 100 Runs')
     f.close()
+plt.savefig('reward_seen.eps')
 
 plt.figure('steps', dpi=300)
 for num_s in range(1, 11):
@@ -54,6 +56,7 @@ for num_s in range(1, 11):
     plt.legend(rescue_team_legends)
     plt.title('Average Over 100 Runs')
     f.close()
+plt.savefig('steps.eps')
 
 plt.figure('steps_seen', dpi=300)
 for num_s in range(1, 11):
@@ -69,4 +72,5 @@ for num_s in range(1, 11):
     plt.legend(rescue_team_legends)
     plt.title('Average Over 100 Runs')
     f.close()
+plt.savefig('steps_seen.eps')
 plt.show()
