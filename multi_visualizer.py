@@ -56,72 +56,90 @@ for idx in range(len(f3['RS_VFD'])-num_scouts):
 
 rescue_team_legends = []
 
-plt.figure('reward')
+plt.figure('reward', dpi=300)
 nn = 100
 length = 2000
 for idx in range(len(f1['RS_VFD'])):
-    re = rescue_team_RewSum[idx]
-    plt.plot(np.asarray(re[0:length:nn]))
-    rescue_team_legends.append(f'Agent {idx+1} exp1')
+    rescue_team_legends.append(f'Agent {idx+1} {exp_name1}')
 for idx in range(len(f2['RS_VFD'])-num_scouts):
-    re1 = rescue_team_RewSum[idx]
-    plt.plot(np.asarray(re1[0:length:nn]))
-    rescue_team_legends.append(f'Agent {idx+1} exp2')
+    rescue_team_legends.append(f'Agent {idx+1} {exp_name2}')
 for idx in range(len(f3['RS_VFD'])-num_scouts):
-    re2 = rescue_team_RewSum[idx]
-    plt.plot(np.asarray(re2[0:length:nn]))
-    rescue_team_legends.append(f'Agent {idx+1} exp3')
+    rescue_team_legends.append(f'Agent {idx+1} {exp_name3}')
+
 for idx in range(len(f1['RS_VFD'])):
     re = rescue_team_RewSum[idx]
-    plt.plot(np.asarray(re[0:length:nn]))
+    plt.plot(np.asarray(re[0:length:nn]), linewidth=5)
 for idx in range(2+len(f2['RS_VFD'])-num_scouts):
     re1 = rescue_team_RewSum[idx]
-    plt.plot(np.asarray(re1[0:length:nn]))
-for idx in range(len(f3['RS_VFD'])-num_scouts):
+    plt.plot(np.asarray(re1[0:length:nn]), linewidth=5)
+for idx in range(4+len(f3['RS_VFD'])-num_scouts):
     re2 = rescue_team_RewSum[idx]
-    plt.plot(np.asarray(re2[0:length:nn]))
+    plt.plot(np.asarray(re2[0:length:nn]), linewidth=5)
+
+for idx in range(len(f1['RS_VFD'])):
+    re = rescue_team_RewSum[idx]
+    plt.plot(np.asarray(re[0:length:nn]), linewidth=5)
+for idx in range(2+len(f2['RS_VFD'])-num_scouts):
+    re1 = rescue_team_RewSum[idx]
+    plt.plot(np.asarray(re1[0:length:nn]), linewidth=5)
+for idx in range(4+len(f3['RS_VFD'])-num_scouts):
+    re2 = rescue_team_RewSum[idx]
+    plt.plot(np.asarray(re2[0:length:nn]), linewidth=5)
+
 plt.xlabel('Number of episodes')
 plt.ylabel('Rescue Team Total Rewards')
 plt.legend(rescue_team_legends)
 plt.title('Average Over 100 Runs')
-plt.figure('reward_seen')
+
+
+plt.figure('reward_seen', dpi=300)
+
 for idx in range(len(f1['RS_VFD'])):
     re3 = rescue_team_RewSum_seen[idx]
-    plt.plot(np.asarray(re3[0:length:nn]))
+    plt.plot(np.asarray(re3[0:length:nn]), linewidth=5)
 for idx in range(2+len(f2['RS_VFD'])-num_scouts):
     re4 = rescue_team_RewSum_seen[idx]
-    plt.plot(np.asarray(re4[0:length:nn]))
+    plt.plot(np.asarray(re4[0:length:nn]), linewidth=5)
 for idx in range(4+len(f3['RS_VFD'])-num_scouts):
     re5 = rescue_team_RewSum_seen[idx]
-    plt.plot(np.asarray(re5[0:length:nn]))
+    plt.plot(np.asarray(re5[0:length:nn]), linewidth=5)
+
 plt.xlabel('Number of Episodes')
 plt.ylabel('Rescue Team Rewards During Victim Visit')
 plt.legend(rescue_team_legends)
 plt.title('Average Over 100 Runs')
-plt.figure('steps')
+
+
+plt.figure('steps', dpi=300)
+
 for idx in range(len(f1['RS_VFD'])):
     stp1 = rescue_team_Steps[idx]
-    plt.plot(np.asarray(stp1[0:length:nn]))
+    plt.plot(np.asarray(stp1[0:length:nn]), linewidth=5)
 for idx in range(2+len(f2['RS_VFD'])-num_scouts):
     stp2 = rescue_team_Steps[idx]
-    plt.plot(np.asarray(stp2[0:length:nn]))
+    plt.plot(np.asarray(stp2[0:length:nn]), linewidth=5)
 for idx in range(4+len(f3['RS_VFD'])-num_scouts):
     stp3 = rescue_team_Steps[idx]
-    plt.plot(np.asarray(stp3[0:length:nn]))
+    plt.plot(np.asarray(stp3[0:length:nn]), linewidth=5)
+
 plt.xlabel('Number of Episodes')
 plt.ylabel('Rescue Team Total Steps')
 plt.legend(rescue_team_legends)
 plt.title('Average Over 100 Runs')
-plt.figure('steps_seen')
+
+
+plt.figure('steps_seen', dpi=300)
+
 for idx in range(len(f1['RS_VFD'])):
     stp4 = rescue_team_Steps_seen[idx]
-    plt.plot(np.asarray(stp4[0:length:nn]))
+    plt.plot(np.asarray(stp4[0:length:nn]), linewidth=5)
 for idx in range(2+len(f2['RS_VFD'])-num_scouts):
     stp5 = rescue_team_Steps_seen[idx]
-    plt.plot(np.asarray(stp5[0:length:nn]))
+    plt.plot(np.asarray(stp5[0:length:nn]), linewidth=5)
 for idx in range(4+len(f3['RS_VFD'])-num_scouts):
     stp6 = rescue_team_Steps_seen[idx]
-    plt.plot(np.asarray(stp6[0:length:nn]))
+    plt.plot(np.asarray(stp6[0:length:nn]), linewidth=5)
+
 plt.xlabel('Number of Episodes')
 plt.ylabel('Rescue Team Steps During Victim Visit')
 plt.legend(rescue_team_legends)
