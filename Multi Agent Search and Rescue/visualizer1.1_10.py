@@ -19,12 +19,12 @@ for num_s in range(1, 11):
 
     plt.plot(np.asarray(f[f'RS0_reward'])[0:length:nn], linewidth=5)
 
-    plt.xlabel('Number of episodes')
+    plt.xlabel('Number of Episodes Divided by 100')
     plt.ylabel('Rescuer Total Rewards')
     plt.legend(rescue_team_legends)
     plt.title('Average Over 100 Runs')
     f.close()
-plt.savefig('reward.eps')
+plt.savefig('reward.png')
 
 plt.figure('reward_seen', dpi=300)
 for num_s in range(1, 11):
@@ -35,12 +35,12 @@ for num_s in range(1, 11):
 
     plt.plot(np.asarray(f[f'RS0_reward_seen'])[0:length:nn], linewidth=5)
 
-    plt.xlabel('Number of Episodes')
+    plt.xlabel('Number of Episodes Divided by 100')
     plt.ylabel('Rescuer Rewards During Victim Visit')
     plt.legend(rescue_team_legends)
     plt.title('Average Over 100 Runs')
     f.close()
-plt.savefig('reward_seen.eps')
+plt.savefig('reward_seen.png')
 
 plt.figure('steps', dpi=300)
 for num_s in range(1, 11):
@@ -51,12 +51,12 @@ for num_s in range(1, 11):
 
     plt.plot(np.asarray(f[f'RS0_steps'])[0:length:nn], linewidth=5)
 
-    plt.xlabel('Number of Episodes')
+    plt.xlabel('Number of Episodes Divided by 100')
     plt.ylabel('Rescuer Total Steps')
     plt.legend(rescue_team_legends)
     plt.title('Average Over 100 Runs')
     f.close()
-plt.savefig('steps.eps')
+plt.savefig('step.png')
 
 plt.figure('steps_seen', dpi=300)
 for num_s in range(1, 11):
@@ -67,10 +67,10 @@ for num_s in range(1, 11):
 
     plt.plot(np.asarray(f[f'RS0_steps_seen'])[0:length:nn], linewidth=5)
 
-    plt.xlabel('Number of Episodes')
+    plt.xlabel('Number of Episodes Divided by 100')
     plt.ylabel('Rescuer Steps During Victim Visit')
     plt.legend(rescue_team_legends)
     plt.title('Average Over 100 Runs')
     f.close()
-plt.savefig('steps_seen.eps')
+plt.savefig('step_seen.png')
 plt.show()

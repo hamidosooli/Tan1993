@@ -10,9 +10,9 @@ exp_name3 = '2R_2S_A2A'
 # exp_name = '5R_5RS_5S'
 
 plt.rcParams.update({'font.size': 12})
-file_name1 = f'multi_agent_Q_learning_{exp_name1}_100Runs.hdf5'
-file_name2 = f'multi_agent_Q_learning_{exp_name2}_100Runs.hdf5'
-file_name3 = f'multi_agent_Q_learning_{exp_name3}_100Runs.hdf5'
+file_name1 = f'../h5py data/multi_agent_Q_learning_{exp_name1}_100Runs.hdf5'
+file_name2 = f'../h5py data/multi_agent_Q_learning_{exp_name2}_100Runs.hdf5'
+file_name3 = f'../h5py data/multi_agent_Q_learning_{exp_name3}_100Runs.hdf5'
 num_scouts = 2
 run_animate = False
 
@@ -86,11 +86,11 @@ for idx in range(4+len(f3['RS_VFD'])-num_scouts):
     re2 = rescue_team_RewSum[idx]
     plt.plot(np.asarray(re2[0:length:nn]), linewidth=5)
 
-plt.xlabel('Number of episodes')
+plt.xlabel('Number of Episodes Divided by 100')
 plt.ylabel('Rescue Team Total Rewards')
 plt.legend(rescue_team_legends)
 plt.title('Average Over 100 Runs')
-
+plt.savefig('rewards.png')
 
 plt.figure('reward_seen', dpi=300)
 
@@ -104,11 +104,11 @@ for idx in range(4+len(f3['RS_VFD'])-num_scouts):
     re5 = rescue_team_RewSum_seen[idx]
     plt.plot(np.asarray(re5[0:length:nn]), linewidth=5)
 
-plt.xlabel('Number of Episodes')
+plt.xlabel('Number of Episodes Divided by 100')
 plt.ylabel('Rescue Team Rewards During Victim Visit')
 plt.legend(rescue_team_legends)
 plt.title('Average Over 100 Runs')
-
+plt.savefig('rewards_seen.png')
 
 plt.figure('steps', dpi=300)
 
@@ -122,11 +122,11 @@ for idx in range(4+len(f3['RS_VFD'])-num_scouts):
     stp3 = rescue_team_Steps[idx]
     plt.plot(np.asarray(stp3[0:length:nn]), linewidth=5)
 
-plt.xlabel('Number of Episodes')
+plt.xlabel('Number of Episodes Divided by 100')
 plt.ylabel('Rescue Team Total Steps')
 plt.legend(rescue_team_legends)
 plt.title('Average Over 100 Runs')
-
+plt.savefig('steps.png')
 
 plt.figure('steps_seen', dpi=300)
 
@@ -140,8 +140,9 @@ for idx in range(4+len(f3['RS_VFD'])-num_scouts):
     stp6 = rescue_team_Steps_seen[idx]
     plt.plot(np.asarray(stp6[0:length:nn]), linewidth=5)
 
-plt.xlabel('Number of Episodes')
+plt.xlabel('Number of Episodes Divided by 100')
 plt.ylabel('Rescue Team Steps During Victim Visit')
 plt.legend(rescue_team_legends)
 plt.title('Average Over 100 Runs')
+plt.savefig('steps_seen.png')
 plt.show()
