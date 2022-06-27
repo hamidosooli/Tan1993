@@ -8,7 +8,7 @@ from network import Network
 from agent import Agent
 
 
-NUM_EPISODES = 2000
+NUM_EPISODES = 20
 NUM_RUNS = 100
 Multi_Runs = False
 # Actions
@@ -111,6 +111,7 @@ def env(accuracy=1e-15):
         # Count the number of just scouts
         if agent.Role == 's':
             num_just_scouts += 1
+    rescue_team_roles = np.array(rescue_team_roles, dtype=list)
     # eps = -1
     tic = time.time()
     # while True:
