@@ -87,7 +87,7 @@ class Agent:
             elif self.action == 3:  # left
                 self.curr_Pos = [row, max(col - speed, 0)]
 
-    def get_dist(pos1, pos2):
+    def get_dist(self, pos1, pos2):
         """ takes two 2 element arrays representing positios in the grid
             return the distance between the the two positions calculated via pythagorean theorem
         """

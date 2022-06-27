@@ -66,10 +66,27 @@ def env(accuracy=1e-15):
     # Define the Network and the agent objects
     network = Network
     agent = Agent
-
+    '''
+        _ID's should be increasingly assigned from 0 onward 
+        _Roles are r: rescuer, rs: rescuer and scout, s: scout, or v: victim
+        _Visual field is the radius by which the agent sees around itself. 
+        _Max visual field determines the size for the Q matrix. An agent with scout/s will have a max isula field 
+        with a radius as large as the environment.
+        _Speed is the number of cells agent moves in one time step. Then the smallest value for speed is 1 
+        (zero speed is for fixed agent). 
+        _Initial location of the agent in the gridworld (y, x).
+        _Number of actions
+        _Number of rows
+        _Number of columns 
+        
+        Make sure to put all of the rescue team members, and victims in their relevant lists after definition 
+        (rescue_team and victims)
+    '''
     # Define the rescue team
-    r1 = agent(0, 'r', 3, 3, 1, [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))], num_Acts, Row_num, Col_num)
-    r2 = agent(1, 'r', 3, 3, 1, [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))], num_Acts, Row_num, Col_num)
+    r1 = agent(0, 'r', 3, 3, 1, [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))],
+               num_Acts, Row_num, Col_num)
+    r2 = agent(1, 'r', 3, 3, 1, [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))],
+               num_Acts, Row_num, Col_num)
     # s3 = agent(2, 's', 4, 4, 1, [row_lim, 0], num_Acts, Row_num, Col_num)
     # s4 = agent(3, 's', 4, 4, 1, [0, col_lim], num_Acts, Row_num, Col_num)
     # rs5 = agent(4, 'r', 4, Row_num, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
