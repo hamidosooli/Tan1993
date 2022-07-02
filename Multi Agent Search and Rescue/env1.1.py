@@ -30,6 +30,8 @@ adj_mat_prior = np.array([[0,  0],
                           [0,  0]], dtype=float)
 exp_name = '2R_NS'
 
+env_mat = np.zeros((Row_num, Col_num))
+
 
 # Transition function
 def movement(pos, action, speed):
@@ -205,8 +207,8 @@ def env(accuracy=1e-15):
 
                 # Smart move algorithm
                 # agent.smart_move(agent.old_Pos, agent.old_Index, agent.wereHere)
-                agent.random_walk(agent.old_Index, agent.old_Pos, agent.Speed)
-
+                # agent.random_walk(agent.old_Index, agent.old_Pos, agent.Speed)
+                agent.ant_colony_move(env_mat, agent.old_Index)
                 # List of the current positions for the rescue team members
                 rescue_team_curr_pos_list.append(agent.curr_Pos)
 

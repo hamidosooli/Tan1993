@@ -33,6 +33,10 @@ class Agent:
         self.Steps = []  # Keeps track of the steps in each step
         self.Steps_seen = []  # Keeps track of the steps after receiving first data
 
+        self.action_from_others = []
+        self.sns_from_others = []
+        self.rew_from_others = []
+
         self.num_actions = num_actions
         self.num_rows = num_rows
         self.num_cols = num_cols
@@ -140,7 +144,7 @@ class Agent:
             next_loc_ind = np.random.randint(0, len(least_visited_locations))
             self.curr_Pos = least_visited_locations[next_loc_ind][0]
 
-    def update_sensation(self, index, raw_sensation, sensation_evaluate, pos2pos, net_adj_mat, adj_mat):
+    def update_sensation(self, index, raw_sensation, sensation_evaluate):
 
         next_sensation = [np.nan, np.nan]
         self.CanSeeIt = False
@@ -154,8 +158,19 @@ class Agent:
             next_sensation = raw_sensation[index, which_victim, :]
             self.CanSeeIt = True
 
-        elif not all(np.isnan(net_adj_mat[index, :])):
-            temp_sensation = next_sensation.copy()
+        return next_sensation
+
+    def reward_func(self, sensation_prime):
+        if sensation_prime[0] == 0 and sensation_prime[1] == 0:
+            re = 1
+        else:
+            re = -.1 * np.linalg.norm(sensation_prime)
+        if np.isnan(re):
+            re = -np.inf
+        return re
+
+    def act_from_others(self, index, raw_sensation, sensation_evaluate, pos2pos, net_adj_mat, adj_mat, rescue_team):
+        if not all(np.isnan(net_adj_mat[index, :])):
             num_scouts = np.sum(adj_mat[index, :])
             for ns in range(int(num_scouts)):
                 curr_scout = np.argwhere(adj_mat[index, :])[ns]
@@ -165,19 +180,20 @@ class Agent:
                         if (np.linalg.norm(raw_sensation[curr_scout, victim, :]) <
                             np.linalg.norm(raw_sensation[curr_scout, which_victim, :])):
                             which_victim = victim
-
-                    next_sensation[0] = (pos2pos[curr_scout, index][0][0] +
-                                         raw_sensation[curr_scout, which_victim, :][0][0])
-                    next_sensation[1] = (pos2pos[curr_scout, index][0][1] +
-                                         raw_sensation[curr_scout, which_victim, :][0][1])
-                    self.CanSeeIt = True
-
-                    if np.linalg.norm(temp_sensation) < np.linalg.norm(next_sensation):
-                        next_sensation = temp_sensation.copy()
-                    else:
-                        temp_sensation = next_sensation.copy()
-
-        return next_sensation
+                    agent = rescue_team[int(curr_scout)]
+                    sns = pos2pos[curr_scout, index][0] + raw_sensation[curr_scout, which_victim, :][0]
+                    idx = self.sensation2index(sns, agent.max_VisualField)
+                    act = np.argmax(agent.Q[idx, :])
+                    self.action_from_others.append(act)
+                    self.sns_from_others.append(sns)
+                    self.rew_from_others.append(self.reward_func(sns))
+                else:
+                    agent = rescue_team[int(curr_scout)]
+                    sns = [np.nan, np.nan]
+                    act = np.argmax(agent.Q[-1, :])
+                    self.action_from_others.append(act)
+                    self.sns_from_others.append(sns)
+                    self.rew_from_others.append(self.reward_func(sns))
 
     def sensation2index(self, sensation, max_vfd):
         if self.CanSeeIt:

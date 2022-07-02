@@ -1,5 +1,7 @@
 import time
+import sys
 
+sys.path.append('/home/hamidoi/PycharmProjects/grid_world_STRONG/Tan1993/Multi Agent Search and Rescue')
 import numpy as np
 import h5py
 
@@ -10,7 +12,7 @@ from agent import Agent
 
 NUM_EPISODES = 2000
 NUM_RUNS = 100
-Multi_Runs = True
+Multi_Runs = False
 # Actions
 FORWARD = 0
 BACKWARD = 1
