@@ -240,7 +240,7 @@ def env(accuracy=1e-15):
             # Smart move algorithm
             # agent.smart_move(agent.old_Pos, agent.old_Index, agent.wereHere)
             # agent.random_walk(agent.old_Index, agent.old_Pos, agent.Speed)
-            agent.ant_colony_move(env_mat, agent.old_Index, env_map)
+            # agent.ant_colony_move(env_mat, agent.old_Index, env_map)
             # List of the current positions for the rescue team members
             rescue_team_curr_pos_list.append(agent.curr_Pos)
 
@@ -280,8 +280,6 @@ def env(accuracy=1e-15):
             making the game matrix
             '''
             game_mat.append(np.tile(np.asarray(agent.rew_from_others).reshape(num_rescue_team, 1), (1, num_rescue_team)))
-            # print(agent.id, agent.action, agent.action_from_others, agent.old_Sensation, agent.sns_from_others,
-            #       agent.reward, agent.rew_from_others, game_mat)
 
         '''
         check to see if there are teammates 

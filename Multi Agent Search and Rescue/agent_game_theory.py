@@ -162,6 +162,45 @@ class Agent:
 
         return next_sensation
 
+    def update_sensation2(self, index, raw_sensation, sensation_evaluate, pos2pos, net_adj_mat, adj_mat):
+
+        next_sensation = [np.nan, np.nan]
+        self.CanSeeIt = False
+
+        if any(sensation_evaluate[index, :]):
+            which_victim = np.argwhere(sensation_evaluate[index, :])[0][0]
+            for victim in np.argwhere(sensation_evaluate[index, :])[0]:
+                if (np.linalg.norm(raw_sensation[index, victim, :]) <
+                    np.linalg.norm(raw_sensation[index, which_victim, :])):
+                    which_victim = victim
+            next_sensation = raw_sensation[index, which_victim, :]
+            self.CanSeeIt = True
+
+        elif not all(np.isnan(net_adj_mat[index, :])):
+            temp_sensation = next_sensation.copy()
+            num_scouts = np.sum(adj_mat[index, :])
+            for ns in range(int(num_scouts)):
+                curr_scout = np.argwhere(adj_mat[index, :])[ns]
+                if any(sensation_evaluate[curr_scout, :][0].tolist()):
+                    which_victim = np.argwhere(sensation_evaluate[curr_scout, :][0])[0]
+                    for victim in np.argwhere(sensation_evaluate[curr_scout, :][0]):
+                        if (np.linalg.norm(raw_sensation[curr_scout, victim, :]) <
+                            np.linalg.norm(raw_sensation[curr_scout, which_victim, :])):
+                            which_victim = victim
+
+                    next_sensation[0] = (pos2pos[curr_scout, index][0][0] +
+                                         raw_sensation[curr_scout, which_victim, :][0][0])
+                    next_sensation[1] = (pos2pos[curr_scout, index][0][1] +
+                                         raw_sensation[curr_scout, which_victim, :][0][1])
+                    self.CanSeeIt = True
+
+                    if np.linalg.norm(temp_sensation) < np.linalg.norm(next_sensation):
+                        next_sensation = temp_sensation.copy()
+                    else:
+                        temp_sensation = next_sensation.copy()
+
+        return next_sensation
+
     def reward_func(self, sensation_prime):
         if sensation_prime[0] == 0 and sensation_prime[1] == 0:
             re = 1

@@ -12,6 +12,7 @@ import h5py
 # exp_name = '5R_5S'
 exp_name = '2RS_GT'
 # exp_name = '2RS_NGT'
+# exp_name = '2RS_NGT2'
 
 plt.rcParams.update({'font.size': 22})
 file_name = f'multi_agent_Q_learning_{exp_name}.hdf5'
