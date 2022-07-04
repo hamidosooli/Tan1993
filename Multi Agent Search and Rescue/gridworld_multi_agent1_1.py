@@ -3,7 +3,26 @@ import numpy as np
 import pygame
 import time
 
-
+env_map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0]])
 pygame.init()
 
 # Constants
@@ -60,6 +79,9 @@ def animate(rescue_team_traj, victims_traj, rescue_team_vfd, rescue_team_roles, 
     img_victim = pg.image.load('victim.png')
     img_mdf_victim = pg.transform.scale(img_victim, (WIDTH // Col_num, HEIGHT // Row_num))
 
+    img_wall = pg.image.load('wall.png')
+    img_mdf_wall = pg.transform.scale(img_wall, (WIDTH // Col_num, HEIGHT // Row_num))
+
     bg.fill(bg_color)
     screen.blit(bg, (0, 0))
     clock = pg.time.Clock()
@@ -76,6 +98,12 @@ def animate(rescue_team_traj, victims_traj, rescue_team_vfd, rescue_team_roles, 
 
         for rescue_team_stt, victims_stt in zip(np.moveaxis(rescue_team_traj, 0, -1),
                                              np.moveaxis(victims_traj, 0, -1)):
+            for row in range(Row_num):
+                for col in range(Col_num):
+                    if env_map[row, col] == 1:
+                        screen.blit(img_mdf_wall,
+                                    (col * (WIDTH // Col_num),
+                                     row * (HEIGHT // Row_num)))
             step += 1
             for num in list_rescue_team:
                 if str(rescue_team_roles[num]) == "b'rs'":
@@ -85,14 +113,14 @@ def animate(rescue_team_traj, victims_traj, rescue_team_vfd, rescue_team_roles, 
                 elif str(rescue_team_roles[num]) == "b's'":
                     vfd_color = vfds_color
 
-                # rescuer visual field depth
-                for j in range(int(max(rescue_team_stt[1, num] - rescue_team_vfd[num], 0)),
-                               int(min(Row_num, rescue_team_stt[1, num] + rescue_team_vfd[num] + 1))):
-                    for i in range(int(max(rescue_team_stt[0, num] - rescue_team_vfd[num], 0)),
-                                   int(min(Col_num, rescue_team_stt[0, num] + rescue_team_vfd[num] + 1))):
-                        rect = pg.Rect(j * (WIDTH // Col_num), i * (HEIGHT // Row_num),
-                                       (WIDTH // Col_num), (HEIGHT // Row_num))
-                        pg.draw.rect(screen, vfd_color, rect)
+                # # rescuer visual field depth
+                # for j in range(int(max(rescue_team_stt[1, num] - rescue_team_vfd[num], 0)),
+                #                int(min(Row_num, rescue_team_stt[1, num] + rescue_team_vfd[num] + 1))):
+                #     for i in range(int(max(rescue_team_stt[0, num] - rescue_team_vfd[num], 0)),
+                #                    int(min(Col_num, rescue_team_stt[0, num] + rescue_team_vfd[num] + 1))):
+                #         rect = pg.Rect(j * (WIDTH // Col_num), i * (HEIGHT // Row_num),
+                #                        (WIDTH // Col_num), (HEIGHT // Row_num))
+                #         pg.draw.rect(screen, vfd_color, rect)
 
             # agents
             for num in list_rescue_team:
@@ -139,14 +167,14 @@ def animate(rescue_team_traj, victims_traj, rescue_team_vfd, rescue_team_roles, 
                 screen.blit(bg, (rescue_team_stt[1, num] * (WIDTH // Col_num),
                                  rescue_team_stt[0, num] * (HEIGHT // Row_num)))
 
-                # rescuer visual field depths
-                for j in range(int(max(rescue_team_stt[1, num] - rescue_team_vfd[num], 0)),
-                               int(min(Row_num, rescue_team_stt[1, num] + rescue_team_vfd[num] + 1))):
-                    for i in range(int(max(rescue_team_stt[0, num] - rescue_team_vfd[num], 0)),
-                                   int(min(Col_num, rescue_team_stt[0, num] + rescue_team_vfd[num] + 1))):
-                        rect = pg.Rect(j * (WIDTH // Col_num), i * (HEIGHT // Row_num),
-                                       (WIDTH // Col_num), (HEIGHT // Row_num))
-                        pg.draw.rect(screen, bg_color, rect)
+                # # rescuer visual field depths
+                # for j in range(int(max(rescue_team_stt[1, num] - rescue_team_vfd[num], 0)),
+                #                int(min(Row_num, rescue_team_stt[1, num] + rescue_team_vfd[num] + 1))):
+                #     for i in range(int(max(rescue_team_stt[0, num] - rescue_team_vfd[num], 0)),
+                #                    int(min(Col_num, rescue_team_stt[0, num] + rescue_team_vfd[num] + 1))):
+                #         rect = pg.Rect(j * (WIDTH // Col_num), i * (HEIGHT // Row_num),
+                #                        (WIDTH // Col_num), (HEIGHT // Row_num))
+                #         pg.draw.rect(screen, bg_color, rect)
 
             victims_history = victims_stt
             rescue_team_history = rescue_team_stt

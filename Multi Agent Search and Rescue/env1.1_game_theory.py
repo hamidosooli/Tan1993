@@ -17,12 +17,36 @@ LEFT = 3
 ACTIONS = [FORWARD, BACKWARD, RIGHT, LEFT]
 num_Acts = len(ACTIONS)
 
+
+
 # Environment dimensions
 Row_num = 20
 Col_num = 20
 row_lim = Row_num - 1
 col_lim = Col_num - 1
 env_mat = np.zeros((Row_num, Col_num))
+global env_map
+env_map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0]])
+
 #                          rs1  rs2  rs3  s4
 adj_mat_prior = np.array([[0,   1],
                           [1,   0]], dtype=float)
@@ -35,6 +59,7 @@ input_file.close()
 
 # Transition function
 def movement(pos, action, speed):
+    global env_map
     row = pos[0]
     col = pos[1]
     next_pos = pos.copy()
@@ -46,11 +71,14 @@ def movement(pos, action, speed):
         next_pos = [row, min(col + speed, col_lim)]
     elif action == 3:  # left
         next_pos = [row, max(col - speed, 0)]
-
-    return next_pos
+    if env_map[next_pos[0], next_pos[1]] == 0:
+        return next_pos
+    else:
+        return pos
 
 
 def env(accuracy=1e-15):
+    global env_map
     global adj_mat_prior
     # Define the Network and the agent objects
     network = Network
@@ -72,9 +100,9 @@ def env(accuracy=1e-15):
         (rescue_team and victims)
     '''
     # Define the rescue team
-    rs1 = agent(0, 'rs', 3, Row_num, 1, [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))],
+    rs1 = agent(0, 'rs', 3, Row_num, 1, [0, 9],
                 num_Acts, Row_num, Col_num)
-    rs2 = agent(1, 'rs', 3, Row_num, 1, [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))],
+    rs2 = agent(1, 'rs', 3, Row_num, 1, [0, 10],
                 num_Acts, Row_num, Col_num)
     # rs3 = agent(2, 'rs', 3, Row_num, 1, [np.random.choice(range(Row_num)), np.random.choice(range(Col_num))],
     #             num_Acts, Row_num, Col_num)
@@ -87,8 +115,8 @@ def env(accuracy=1e-15):
     # rs5 = agent(4, 'r', 4, Row_num, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
 
     # Define the victims
-    v1 = agent(0, 'v', 0, 0, 1, [int(Row_num / 2) - 2, int(Col_num / 2) - 2], num_Acts, Row_num, Col_num)
-    v2 = agent(1, 'v', 0, 0, 1, [int(Row_num / 2) + 2, int(Col_num / 2) + 2], num_Acts, Row_num, Col_num)
+    v1 = agent(0, 'v', 0, 0, 1, [9, 7], num_Acts, Row_num, Col_num)
+    v2 = agent(1, 'v', 0, 0, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
     # v3 = agent(2, 'v', 0, 0, 1, [int(Row_num / 2) - 2, int(Col_num / 2) - 2], num_Acts, Row_num, Col_num)
     # v4 = agent(3, 'v', 0, 0, 1, [int(Row_num / 2) + 4, int(Col_num / 2) + 4], num_Acts, Row_num, Col_num)
     # v5 = agent(4, 'v', 0, 0, 1, [int(Row_num / 2) - 4, int(Col_num / 2) - 4], num_Acts, Row_num, Col_num)
@@ -192,12 +220,19 @@ def env(accuracy=1e-15):
             agent.old_Index = agent.sensation2index(agent.old_Sensation, agent.max_VisualField)
 
             # Actions from the scouts
+            '''
+            calculating the suggested actions
+            '''
             agent.act_from_others(rescue_team_Hist.index(agent),
                                   old_raw_sensations, eval_old_sensations,
                                   old_scouts2rescuers, net.adj_mat, adj_mat,
                                   rescue_team_Hist)
+
             # Actions for the rescue team
             agent.action = np.argmax(agent.Q[agent.old_Index, :])
+            '''
+            adding agents action in the beginning of the action list
+            '''
             agent.action_from_others.insert(0, agent.action)
             # Next positions for the rescue team
             agent.curr_Pos = movement(agent.old_Pos, agent.action, agent.Speed)
@@ -205,7 +240,7 @@ def env(accuracy=1e-15):
             # Smart move algorithm
             # agent.smart_move(agent.old_Pos, agent.old_Index, agent.wereHere)
             # agent.random_walk(agent.old_Index, agent.old_Pos, agent.Speed)
-            agent.ant_colony_move(env_mat, agent.old_Index)
+            agent.ant_colony_move(env_mat, agent.old_Index, env_map)
             # List of the current positions for the rescue team members
             rescue_team_curr_pos_list.append(agent.curr_Pos)
 
@@ -228,59 +263,74 @@ def env(accuracy=1e-15):
         for agent in rescue_team_Hist:
             agent.curr_Sensation = agent.update_sensation(rescue_team_Hist.index(agent),
                                                           curr_raw_sensations, eval_curr_sensations)
+            '''
+            adding agents sensation in the beginning of the sensation list
+            '''
+            agent.sns_from_others.insert(0, agent.curr_Sensation)
             # Calculation of the indices for the rescue team (after their movement)
             agent.curr_Index = agent.sensation2index(agent.curr_Sensation, agent.max_VisualField)
 
             # Rewarding the rescue team
             agent.reward = agent.reward_func(agent.curr_Sensation)
+            '''
+            adding agents reward in the beginning of the reward list
+            '''
             agent.rew_from_others.insert(0, agent.reward)
+            '''
+            making the game matrix
+            '''
             game_mat.append(np.tile(np.asarray(agent.rew_from_others).reshape(num_rescue_team, 1), (1, num_rescue_team)))
             # print(agent.id, agent.action, agent.action_from_others, agent.old_Sensation, agent.sns_from_others,
             #       agent.reward, agent.rew_from_others, game_mat)
-        game_mat = np.add(game_mat[0], np.transpose(game_mat[-1]))
+
+        '''
+        check to see if there are teammates 
+        '''
         if num_rescue_team > 1:
+            game_mat = np.add(game_mat[0], np.transpose(game_mat[1]))
+            '''
+            calculate the value and location of the Nash equilibrium from each agents point of view
+            '''
             V_P1 = np.amin(np.amax(game_mat, axis=0))
             Loc_P1 = np.argmin(np.argmax(game_mat, axis=0))
             V_P2 = np.amin(np.amax(game_mat, axis=1))
             Loc_P2 = np.argmin(np.argmax(game_mat, axis=1))
             adloc_P1 = Loc_P1
             adloc_P2 = Loc_P2
-            # # Using admissible Nash equilibrium in case of different equilibriums
-            # if game_mat[Loc_P1, Loc_P2] != V_P1 and game_mat[Loc_P1, Loc_P2] != V_P2:
-            #     if V_P1 < V_P2:
-            #         for k in range(4):
-            #             if game_mat[Loc_P1, k] == V_P1:
-            #                 V_P2 = game_mat[Loc_P1, k]
-            #                 adloc_P2 = k
-            #     elif V_P2 < V_P1:
-            #         for k in range(4):
-            #             if game_mat[k, Loc_P2] == V_P2:
-            #                 V_P1 = game_mat[k, Loc_P2]
-            #                 adloc_P1 = k
+            '''
+            leveraging admissible Nash equilibrium in case of different equilibriums
+            '''
+            # Using admissible Nash equilibrium in case of different equilibriums
+            if game_mat[Loc_P1, Loc_P2] != V_P1 and game_mat[Loc_P1, Loc_P2] != V_P2:
+                if V_P1 < V_P2:
+                    for k in range(num_rescue_team):
+                        if game_mat[Loc_P1, k] == V_P1:
+                            V_P2 = game_mat[Loc_P1, k]
+                            adloc_P2 = k
+                elif V_P2 < V_P1:
+                    for k in range(num_rescue_team):
+                        if game_mat[k, Loc_P2] == V_P2:
+                            V_P1 = game_mat[k, Loc_P2]
+                            adloc_P1 = k
 
+            '''
+            walking through the agents and equilibriums to calculate action, reward, next position, next sensation
+            '''
             for agent, adloc in zip(rescue_team_Hist, [adloc_P1, adloc_P2]):
                 agent.action = agent.action_from_others[adloc]
+                agent.reward = agent.rew_from_others[adloc]
                 agent.curr_Pos = movement(agent.old_Pos, agent.action, agent.Speed)
-
+                # agent.ant_colony_move(env_mat, agent.old_Index, env_map)
+                agent.curr_Sensation = agent.sns_from_others[adloc]
+            '''
+            update the list of the current positions for the rescue team members
+            '''
             rescue_team_curr_pos_list = []
             for agent in rescue_team_Hist:
+                # List of the current positions for the rescue team members
                 rescue_team_curr_pos_list.append(agent.curr_Pos)
             rescue_team_curr_pos_list = np.asarray(rescue_team_curr_pos_list)
 
-            # Calculation of the distance between agents (after their movement)
-            curr_scouts2rescuers = net.pos2pos(rescue_team_curr_pos_list)
-
-            # Calculation of the new raw sensations for the rescue team (after their movement)
-            curr_raw_sensations = net.sensed_pos(victims_old_pos_list, rescue_team_curr_pos_list)
-
-            # Check to see if the sensations are in the agents visual fields
-            eval_curr_sensations = net.is_seen(rescue_team_VFD_list, curr_raw_sensations)
-
-            for agent in rescue_team_Hist:
-                agent.curr_Sensation = agent.update_sensation(rescue_team_Hist.index(agent),
-                                                              curr_raw_sensations, eval_curr_sensations)
-                # Calculation of the indices for the rescue team (after their movement)
-                agent.curr_Index = agent.sensation2index(agent.curr_Sensation, agent.max_VisualField)
         for agent in rescue_team_Hist:
             # Check to see if the team rescued any victim
             if not agent.Finish:

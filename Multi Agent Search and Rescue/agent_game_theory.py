@@ -131,7 +131,7 @@ class Agent:
                 min_visited_locations.append(loc)
         return min_visited_locations
 
-    def ant_colony_move(self, cells_visited, idx):
+    def ant_colony_move(self, cells_visited, idx, env_map):
         """ takes a 2D array representing the visit count for cells in the grid world
             and increments the current agents position toward the least visited neighboring cell
         """
@@ -142,7 +142,9 @@ class Agent:
             least_visited_locations = self.get_minimum_visited_cells(nearby_location_visits)
             # select a random location from the least visit locations nearby
             next_loc_ind = np.random.randint(0, len(least_visited_locations))
-            self.curr_Pos = least_visited_locations[next_loc_ind][0]
+            next_loc = least_visited_locations[next_loc_ind][0]
+            if env_map[next_loc[0], next_loc[1]] == 0:
+                self.curr_Pos = next_loc
 
     def update_sensation(self, index, raw_sensation, sensation_evaluate):
 
