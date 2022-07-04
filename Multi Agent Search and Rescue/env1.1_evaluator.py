@@ -47,6 +47,9 @@ env_map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0]])
 
+for i in np.argwhere(env_map):
+    if env_map[i[0], i[1]] == 1:
+        env_mat[i[0], i[1]] = np.inf
 #                          rs1  rs2  rs3  s4
 adj_mat_prior = np.array([[0,   1],
                           [1,   0]], dtype=float)
@@ -243,7 +246,7 @@ def env(accuracy=1e-15):
             # Smart move algorithm
             # agent.smart_move(agent.old_Pos, agent.old_Index, agent.wereHere)
             # agent.random_walk(agent.old_Index, agent.old_Pos, agent.Speed)
-            # agent.ant_colony_move(env_mat, agent.old_Index, env_map)
+            agent.ant_colony_move(env_mat, agent.old_Index, env_map)
             # List of the current positions for the rescue team members
             rescue_team_curr_pos_list.append(agent.curr_Pos)
 
