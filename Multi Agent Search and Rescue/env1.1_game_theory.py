@@ -292,10 +292,10 @@ def env(accuracy=1e-15):
             '''
             calculate the value and location of the Nash equilibrium from each agents point of view
             '''
-            V_P1 = np.amin(np.amax(game_mat, axis=0))
-            Loc_P1 = np.argmin(np.argmax(game_mat, axis=0))
-            V_P2 = np.amin(np.amax(game_mat, axis=1))
-            Loc_P2 = np.argmin(np.argmax(game_mat, axis=1))
+            V_P1 = np.amax(np.amin(game_mat, axis=0))
+            Loc_P1 = np.argmax(np.argmin(game_mat, axis=0))
+            V_P2 = np.amax(np.amin(game_mat, axis=1))
+            Loc_P2 = np.argmax(np.argmin(game_mat, axis=1))
             adloc_P1 = Loc_P1
             adloc_P2 = Loc_P2
             '''
