@@ -278,13 +278,13 @@ def env(accuracy=1e-15):
             # Rewarding the rescue team
             agent.reward = agent.reward_func(agent.curr_Sensation)
 
-            rescue_team_curr_pos_list = []
-            for agent in rescue_team_Hist:
-                # List of the current positions for the rescue team members
-                rescue_team_curr_pos_list.append(agent.curr_Pos)
-            rescue_team_curr_pos_list = np.asarray(rescue_team_curr_pos_list)
+            # rescue_team_curr_pos_list = []
+            # for agent in rescue_team_Hist:
+            #     # List of the current positions for the rescue team members
+            #     rescue_team_curr_pos_list.append(agent.curr_Pos)
+            # rescue_team_curr_pos_list = np.asarray(rescue_team_curr_pos_list)
 
-        for agent in rescue_team_Hist:
+        # for agent in rescue_team_Hist:
             # Check to see if the team rescued any victim
             if not agent.Finish:
                 rescue_team_Hist, adj_mat = agent.rescue_accomplished(rescue_team_Hist, agent, adj_mat)
