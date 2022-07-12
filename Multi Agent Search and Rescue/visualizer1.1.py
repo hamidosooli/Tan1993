@@ -6,16 +6,30 @@ import h5py
 # exp_name = '2R_NS'
 # exp_name = '2R_2S'
 # exp_name = '2R_2S_A2A'
+exp_name = '3R_3S_A2A'
+# exp_name = '4R_4S_A2A'
 # exp_name = '2R_NS_1V'
 # exp_name = '2R_2S_1V'
 # exp_name = '2R_2S_A2A_1V'
 # exp_name = '5R_5S'
-exp_name = '2RS_GT'
+# exp_name = '2RS_GT'
 # exp_name = '2RS_NGT'
 # exp_name = '2RS_NGT2'
-
+Row_num = 20
+Col_num = 20
+env_map = np.zeros((Row_num, Col_num))
+# Room 1
+env_map[int(Row_num / 2), :int(Col_num / 3)] = 1
+env_map[int(Row_num / 2): -2, int(Col_num / 3)] = 1
+# Room 2
+env_map[: int(Row_num / 2.5), int(Col_num / 3)] = 1
+# Room 3
+env_map[int(Row_num / 2), int(2*Col_num / 3):] = 1
+env_map[int(Row_num / 2): -2, int(2*Col_num / 3)] = 1
+# Room 4
+env_map[: int(Row_num / 2.5), int(2*Col_num / 3)] = 1
 plt.rcParams.update({'font.size': 22})
-file_name = f'multi_agent_Q_learning_{exp_name}.hdf5'
+file_name = f'scenarios/multi_agent_Q_learning_{exp_name}.hdf5'
 
 run_animate = True
 
@@ -42,7 +56,7 @@ with h5py.File(file_name, 'r') as f:
 
     if run_animate:
         animate(np.asarray(rescue_team_Traj), np.asarray(victims_Traj),
-                np.asarray(f['RS_VFD']), f['RS_ROLES'], wait_time=0.5)
+                np.asarray(f['RS_VFD']), f['RS_ROLES'], 0.5, env_map)
 
     rescue_team_legends = []
 

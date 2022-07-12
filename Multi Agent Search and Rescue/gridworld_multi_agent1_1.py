@@ -3,26 +3,6 @@ import numpy as np
 import pygame
 import time
 
-env_map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0]])
 pygame.init()
 
 # Constants
@@ -54,7 +34,7 @@ def draw_grid(scr):
             pg.draw.rect(scr, bg_color, rect, 1)
 
 
-def animate(rescue_team_traj, victims_traj, rescue_team_vfd, rescue_team_roles, wait_time):
+def animate(rescue_team_traj, victims_traj, rescue_team_vfd, rescue_team_roles, wait_time, env_map=np.zeros((Row_num, Col_num))):
 
     font = pg.font.SysFont('arial', 20)
 
@@ -113,7 +93,7 @@ def animate(rescue_team_traj, victims_traj, rescue_team_vfd, rescue_team_roles, 
                 elif str(rescue_team_roles[num]) == "b's'":
                     vfd_color = vfds_color
 
-                # # rescuer visual field depth
+                # rescuer visual field depth
                 # for j in range(int(max(rescue_team_stt[1, num] - rescue_team_vfd[num], 0)),
                 #                int(min(Row_num, rescue_team_stt[1, num] + rescue_team_vfd[num] + 1))):
                 #     for i in range(int(max(rescue_team_stt[0, num] - rescue_team_vfd[num], 0)),
@@ -167,7 +147,7 @@ def animate(rescue_team_traj, victims_traj, rescue_team_vfd, rescue_team_roles, 
                 screen.blit(bg, (rescue_team_stt[1, num] * (WIDTH // Col_num),
                                  rescue_team_stt[0, num] * (HEIGHT // Row_num)))
 
-                # # rescuer visual field depths
+                # rescuer visual field depths
                 # for j in range(int(max(rescue_team_stt[1, num] - rescue_team_vfd[num], 0)),
                 #                int(min(Row_num, rescue_team_stt[1, num] + rescue_team_vfd[num] + 1))):
                 #     for i in range(int(max(rescue_team_stt[0, num] - rescue_team_vfd[num], 0)),
