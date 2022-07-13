@@ -12,9 +12,9 @@ import h5py
 # exp_name = '2R_2S_1V'
 # exp_name = '2R_2S_A2A_1V'
 # exp_name = '5R_5S'
-# exp_name = '2RS_GT'
+exp_name = '2RS_GT'
 # exp_name = '2RS_NGT'
-exp_name = '2RS_NGT2'
+# exp_name = '2RS_NGT2'
 Row_num = 20
 Col_num = 20
 # env_map = np.zeros((Row_num, Col_num))

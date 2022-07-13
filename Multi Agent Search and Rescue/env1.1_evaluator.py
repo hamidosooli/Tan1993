@@ -8,7 +8,7 @@ from agent_game_theory import Agent
 
 NUM_EPISODES = 20
 NUM_RUNS = 10
-Multi_Runs = True
+Multi_Runs = False
 # Actions
 FORWARD = 0
 BACKWARD = 1
@@ -250,7 +250,7 @@ def env(accuracy=1e-15):
             # Smart move algorithm
             # agent.smart_move(agent.old_Pos, agent.old_Index, agent.wereHere)
             # agent.random_walk(agent.old_Index, agent.old_Pos, agent.Speed)
-            agent.ant_colony_move(env_mat, agent.old_Index, env_map)
+            # agent.ant_colony_move(env_mat, agent.old_Index, env_map)
             # List of the current positions for the rescue team members
             rescue_team_curr_pos_list.append(agent.curr_Pos)
 
@@ -282,7 +282,7 @@ def env(accuracy=1e-15):
 
             # Calculation of the indices for the rescue team (after their movement)
             agent.curr_Index = agent.sensation2index(agent.curr_Sensation, agent.max_VisualField)
-
+            agent.ant_colony_move(env_mat, agent.curr_Index, env_map)
             # Rewarding the rescue team
             agent.reward = agent.reward_func(agent.curr_Sensation)
 
