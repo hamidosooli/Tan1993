@@ -282,7 +282,7 @@ def env(accuracy=1e-15):
 
             # Calculation of the indices for the rescue team (after their movement)
             agent.curr_Index = agent.sensation2index(agent.curr_Sensation, agent.max_VisualField)
-            agent.ant_colony_move(env_mat, agent.old_Index, agent.curr_Index, env_map)
+            agent.ant_colony_move(env_mat, agent.curr_Index, env_map)
             # Rewarding the rescue team
             agent.reward = agent.reward_func(agent.curr_Sensation)
 
@@ -366,10 +366,6 @@ def env(accuracy=1e-15):
         rescue_team_RewSum_seen.append(agent.RewSum_seen)
         rescue_team_Steps_seen.append(agent.Steps_seen)
         rescue_team_Q.append(agent.Q)
-    print(f'Rewards: {rescue_team_RewSum}\n')
-    print(f'Rewards Seen: {rescue_team_RewSum_seen}\n')
-    print(f'Steps: {rescue_team_Steps}\n')
-    print(f'Steps Seen: {rescue_team_Steps_seen}\n')
     for agent in rescue_team:
         while len(agent.Traj) < largest:
             agent.Traj.append(agent.Traj[-1])
@@ -405,10 +401,10 @@ if Multi_Runs:
         rescue_team_RewSum_seen_Run.append(list(filter(None, rescue_team_RewSum_seen)))
         rescue_team_Steps_seen_Run.append(list(filter(None, rescue_team_Steps_seen)))
 
-    # rescue_team_RewSum_Run = np.mean(np.asarray(rescue_team_RewSum_Run), axis=0)
-    # rescue_team_Steps_Run = np.mean(np.asarray(rescue_team_Steps_Run), axis=0)
-    # rescue_team_RewSum_seen_Run = np.mean(np.asarray(rescue_team_RewSum_seen_Run), axis=0)
-    # rescue_team_Steps_seen_Run = np.mean(np.asarray(rescue_team_Steps_seen_Run), axis=0)
+    rescue_team_RewSum_Run = np.mean(np.asarray(rescue_team_RewSum_Run), axis=0)
+    rescue_team_Steps_Run = np.mean(np.asarray(rescue_team_Steps_Run), axis=0)
+    rescue_team_RewSum_seen_Run = np.mean(np.asarray(rescue_team_RewSum_seen_Run), axis=0)
+    rescue_team_Steps_seen_Run = np.mean(np.asarray(rescue_team_Steps_seen_Run), axis=0)
 
     with h5py.File(f'multi_agent_Q_learning_{exp_name}_{str(NUM_RUNS)}Runs.hdf5', 'w') as f:
         for idx, rew_sum in enumerate(rescue_team_RewSum_Run):

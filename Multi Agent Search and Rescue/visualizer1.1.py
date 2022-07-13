@@ -12,9 +12,9 @@ import h5py
 # exp_name = '2R_2S_1V'
 # exp_name = '2R_2S_A2A_1V'
 # exp_name = '5R_5S'
-exp_name = '2RS_GT'
+# exp_name = '2RS_GT'
 # exp_name = '2RS_NGT'
-# exp_name = '2RS_NGT2'
+exp_name = '2RS_NGT2'
 Row_num = 20
 Col_num = 20
 # env_map = np.zeros((Row_num, Col_num))
@@ -49,9 +49,9 @@ env_map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0]])
 plt.rcParams.update({'font.size': 22})
-file_name = f'multi_agent_Q_learning_{exp_name}.hdf5'
+file_name = f'multi_agent_Q_learning_{exp_name}_10Runs.hdf5'
 
-run_animate = True
+run_animate = False
 
 rescue_team_Traj = []
 rescue_team_RewSum = []
@@ -65,14 +65,14 @@ with h5py.File(file_name, 'r') as f:
 
     for idx in range(len(f['RS_VFD'])):
 
-        rescue_team_Traj.append(f[f'RS{idx}_trajectory'])
+        # rescue_team_Traj.append(f[f'RS{idx}_trajectory'])
         rescue_team_RewSum.append(f[f'RS{idx}_reward'])
         rescue_team_Steps.append(f[f'RS{idx}_steps'])
         rescue_team_RewSum_seen.append(f[f'RS{idx}_reward_seen'])
         rescue_team_Steps_seen.append(f[f'RS{idx}_steps_seen'])
-        rescue_team_Q.append(f[f'RS{idx}_Q'])
-    for idx in range(f['victims_num'][0]):
-        victims_Traj.append(f[f'victim{idx}_trajectory'])
+    #     rescue_team_Q.append(f[f'RS{idx}_Q'])
+    # for idx in range(f['victims_num'][0]):
+    #     victims_Traj.append(f[f'victim{idx}_trajectory'])
 
     if run_animate:
         animate(np.asarray(rescue_team_Traj), np.asarray(victims_Traj),
