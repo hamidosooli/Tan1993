@@ -330,7 +330,7 @@ def env(accuracy=1e-15):
 
                 agent.curr_Sensation = agent.sns_from_others[adloc]
                 agent.curr_Index = agent.sensation2index(agent.curr_Sensation, agent.max_VisualField)
-                agent.ant_colony_move(env_mat, agent.curr_Index, env_map)
+                agent.ant_colony_move(env_mat, agent.old_Index, agent.curr_Index, env_map)
             '''
             update the list of the current positions for the rescue team members
             '''

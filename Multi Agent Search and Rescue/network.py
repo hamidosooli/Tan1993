@@ -42,8 +42,9 @@ class Network:
         num_victims = np.shape(rescuer2victim)[1]
         for wall in range(num_walls):
             for victim in range(num_victims):
+                # Use triangle inequality to prevent seeing behind the walls
                 if ((np.linalg.norm(rescuer2wall[agent_id, wall, :]) + np.linalg.norm(victim2wall[victim, wall, :])) <=
-                np.linalg.norm(rescuer2victim[agent_id, victim, :])):
+                        np.linalg.norm(rescuer2victim[agent_id, victim, :])):
                     is_seen[agent_id, victim] = False
         return is_seen
 
