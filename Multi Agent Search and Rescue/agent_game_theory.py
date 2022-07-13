@@ -20,6 +20,7 @@ class Agent:
         self.First = True
         self.wereHere = np.ones((num_rows, num_cols))
         self.Speed = speed  # is the number of cells the agent can move in one time-step
+        self.num2rescue = 0
 
         self.init_pos = init_pos
         self.curr_Pos = self.init_pos
@@ -57,6 +58,7 @@ class Agent:
         self.Convergence = False
         self.First = True
         self.t_step_seen = 0
+        self.num2rescue = 0
         self.RewHist = []
         self.RewHist_seen = []
         self.Traj = []
@@ -205,9 +207,9 @@ class Agent:
         if sensation_prime[0] == 0 and sensation_prime[1] == 0:
             re = 1
         else:
-            re = -.1 * np.linalg.norm(sensation_prime)
+            re = -.01 * np.linalg.norm(sensation_prime)
         if np.isnan(re):
-            re = -np.inf
+            re = -10
         return re
 
     def act_from_others(self, index, raw_sensation, sensation_evaluate, pos2pos, net_adj_mat, adj_mat, rescue_team):
@@ -249,25 +251,31 @@ class Agent:
              (self.curr_Sensation[0] == 0 and self.curr_Sensation[1] == 0)) and
                 'r' in self.Role):
             self.Finish = True
-            adj_mat = np.delete(adj_mat, rescue_team_Hist.index(agent), 0)
-            adj_mat = np.delete(adj_mat, rescue_team_Hist.index(agent), 1)
-
-            rescue_team_Hist.remove(agent)
+            # adj_mat = np.delete(adj_mat, rescue_team_Hist.index(agent), 0)
+            # adj_mat = np.delete(adj_mat, rescue_team_Hist.index(agent), 1)
+            #
+            # rescue_team_Hist.remove(agent)
 
         return rescue_team_Hist, adj_mat
 
     def victim_rescued(self, rescue_team_old_pos_list, rescue_team_curr_pos_list,
                        rescue_team_role_list, victim, victims_Hist):
+        self.num2rescue = 0
         for idx, rescuer_old_pos in enumerate(rescue_team_old_pos_list):
             if (((rescuer_old_pos[0] == self.old_Pos[0] and
                   rescuer_old_pos[1] == self.old_Pos[1]) or
                  (rescue_team_curr_pos_list[idx][0] == self.old_Pos[0] and
                   rescue_team_curr_pos_list[idx][1] == self.old_Pos[1])) and
                     'r' in rescue_team_role_list[idx]):
+                self.num2rescue += 1
+            if (((rescuer_old_pos[0] == self.old_Pos[0] and
+                  rescuer_old_pos[1] == self.old_Pos[1]) or
+                 (rescue_team_curr_pos_list[idx][0] == self.old_Pos[0] and
+                  rescue_team_curr_pos_list[idx][1] == self.old_Pos[1])) and
+                    'r' in rescue_team_role_list[idx]) and self.num2rescue == 2:
                 self.Finish = True
                 victims_Hist.remove(victim)
-                break  # You already removed this victim, no need to check the rest of the list
-
+                # break  # You already removed this victim, no need to check the rest of the list
         return victims_Hist
 
     def convergence_check(self, accuracy):

@@ -7,8 +7,8 @@ from network import Network
 from agent_game_theory import Agent
 
 NUM_EPISODES = 20
-NUM_RUNS = 100
-Multi_Runs = False
+NUM_RUNS = 10
+Multi_Runs = True
 # Actions
 FORWARD = 0
 BACKWARD = 1
@@ -47,13 +47,12 @@ env_map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0]])
 
-for i in np.argwhere(env_map):
-    if env_map[i[0], i[1]] == 1:
-        env_mat[i[0], i[1]] = np.inf
+env_mat = 1000000 * env_map
+walls_locations = np.argwhere(env_map)
 #                          rs1  rs2  rs3  s4
 adj_mat_prior = np.array([[0,   1],
                           [1,   0]], dtype=float)
-exp_name = '2RS_NGT'
+exp_name = '2RS_NGT2'
 
 input_file = h5py.File('scenarios/multi_agent_Q_learning_1R_6S_1V.hdf5', 'r')
 Q_star = np.asarray(input_file['RS0_Q'])
@@ -119,14 +118,14 @@ def env(accuracy=1e-15):
 
     # Define the victims
     v1 = agent(0, 'v', 0, 0, 1, [9, 7], num_Acts, Row_num, Col_num)
-    v2 = agent(1, 'v', 0, 0, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
+    # v2 = agent(1, 'v', 0, 0, 1, [row_lim, col_lim], num_Acts, Row_num, Col_num)
     # v3 = agent(2, 'v', 0, 0, 1, [int(Row_num / 2) - 2, int(Col_num / 2) - 2], num_Acts, Row_num, Col_num)
     # v4 = agent(3, 'v', 0, 0, 1, [int(Row_num / 2) + 4, int(Col_num / 2) + 4], num_Acts, Row_num, Col_num)
     # v5 = agent(4, 'v', 0, 0, 1, [int(Row_num / 2) - 4, int(Col_num / 2) - 4], num_Acts, Row_num, Col_num)
 
     # List of objects
     rescue_team = [rs1, rs2]
-    victims = [v1, v2]
+    victims = [v1]
     VFD_list = []
     num_just_scouts = 0
     rescue_team_roles = []
@@ -209,6 +208,8 @@ def env(accuracy=1e-15):
 
         # Calculation of the raw sensations for the rescue team
         old_raw_sensations = net.sensed_pos(victims_old_pos_list, rescue_team_old_pos_list)
+        old_wall_sensations = net.sensed_pos(walls_locations, rescue_team_old_pos_list)
+        victims_wall_sensations = net.sensed_pos(walls_locations, victims_old_pos_list)
 
         # Check to see if the sensations are in the agents visual fields
         eval_old_sensations = net.is_seen(rescue_team_VFD_list, old_raw_sensations)
@@ -216,12 +217,15 @@ def env(accuracy=1e-15):
         rescue_team_curr_pos_list = []
         rescue_team_role_list = []
         for agent in rescue_team_Hist:
+            eval_old_sensations = net.wall_sensor(old_wall_sensations, old_raw_sensations, victims_wall_sensations,
+                                                  rescue_team_Hist.index(agent), eval_old_sensations)
             # Calculation of the sensations for the rescue team
-            agent.old_Sensation = agent.update_sensation(rescue_team_Hist.index(agent),
-                                                         old_raw_sensations, eval_old_sensations)
-            # agent.old_Sensation = agent.update_sensation2(rescue_team_Hist.index(agent),
-            #                                              old_raw_sensations, eval_old_sensations,
-            #                                              old_scouts2rescuers, net.adj_mat, adj_mat)
+            # agent.old_Sensation = agent.update_sensation(rescue_team_Hist.index(agent),
+            #                                              old_raw_sensations, eval_old_sensations)
+
+            agent.old_Sensation = agent.update_sensation2(rescue_team_Hist.index(agent),
+                                                         old_raw_sensations, eval_old_sensations,
+                                                         old_scouts2rescuers, net.adj_mat, adj_mat)
             # Calculation of the indices for the rescue team
             agent.old_Index = agent.sensation2index(agent.old_Sensation, agent.max_VisualField)
 
@@ -260,17 +264,21 @@ def env(accuracy=1e-15):
 
         # Calculation of the new raw sensations for the rescue team (after their movement)
         curr_raw_sensations = net.sensed_pos(victims_old_pos_list, rescue_team_curr_pos_list)
+        curr_wall_sensations = net.sensed_pos(walls_locations, rescue_team_curr_pos_list)
 
         # Check to see if the sensations are in the agents visual fields
         eval_curr_sensations = net.is_seen(rescue_team_VFD_list, curr_raw_sensations)
 
         # Calculation of the new sensations for the rescue team (after their movement)
         for agent in rescue_team_Hist:
-            agent.curr_Sensation = agent.update_sensation(rescue_team_Hist.index(agent),
-                                                          curr_raw_sensations, eval_curr_sensations)
-            # agent.curr_Sensation = agent.update_sensation2(rescue_team_Hist.index(agent),
-            #                                               curr_raw_sensations, eval_curr_sensations,
-            #                                               curr_scouts2rescuers, net.adj_mat, adj_mat)
+            eval_curr_sensations = net.wall_sensor(curr_wall_sensations, curr_raw_sensations,
+                                                   victims_wall_sensations, rescue_team_Hist.index(agent),
+                                                   eval_curr_sensations)
+            # agent.curr_Sensation = agent.update_sensation(rescue_team_Hist.index(agent),
+            #                                               curr_raw_sensations, eval_curr_sensations)
+            agent.curr_Sensation = agent.update_sensation2(rescue_team_Hist.index(agent),
+                                                          curr_raw_sensations, eval_curr_sensations,
+                                                          curr_scouts2rescuers, net.adj_mat, adj_mat)
 
             # Calculation of the indices for the rescue team (after their movement)
             agent.curr_Index = agent.sensation2index(agent.curr_Sensation, agent.max_VisualField)
@@ -313,7 +321,7 @@ def env(accuracy=1e-15):
                                 victim.Steps.append(t_step)
                                 victim.First = False
                                 break  # Rescue more than one victim by an agent
-        if len(rescue_team_Hist) == num_just_scouts and len(victims_Hist) == 0:
+        if len(victims_Hist) == 0:
             print(f'all of the victims were rescued in {t_step} steps')
             break
 
