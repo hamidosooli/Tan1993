@@ -37,14 +37,16 @@ class Network:
         tuple_cond = np.abs(raw_sensation) <= condition
         return np.logical_and(tuple_cond[:, :, 0], tuple_cond[:, :, 1])
 
-    def wall_sensor(self, rescuer2wall, rescuer2victim, victim2wall, agent_id, is_seen):
+    def wall_sensor(self, rescuer2wall, rescuer2victim, victim2wall, agent_id, is_seen, vfd_list):
         num_walls = np.shape(rescuer2wall)[1]
         num_victims = np.shape(rescuer2victim)[1]
         for wall in range(num_walls):
             for victim in range(num_victims):
                 # Use triangle inequality to prevent seeing behind the walls
-                if ((np.linalg.norm(rescuer2wall[agent_id, wall, :]) + np.linalg.norm(victim2wall[victim, wall, :])) <=
-                        np.linalg.norm(rescuer2victim[agent_id, victim, :])):
+                if (((np.linalg.norm(rescuer2wall[agent_id, wall, :]) + np.linalg.norm(victim2wall[victim, wall, :])) <=
+                        np.linalg.norm(rescuer2victim[agent_id, victim, :])) and
+                        (rescuer2victim[agent_id, victim, 0] <= vfd_list[agent_id] and
+                         rescuer2victim[agent_id, victim, 1] <= vfd_list[agent_id])):
                     is_seen[agent_id, victim] = False
         return is_seen
 

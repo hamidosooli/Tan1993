@@ -6,9 +6,9 @@ import h5py
 from network import Network
 from agent_game_theory import Agent
 
-NUM_EPISODES = 20
-NUM_RUNS = 10
-Multi_Runs = False
+NUM_EPISODES = 2000
+NUM_RUNS = 100
+Multi_Runs = True
 # Actions
 FORWARD = 0
 BACKWARD = 1
@@ -218,7 +218,7 @@ def env(accuracy=1e-15):
         rescue_team_role_list = []
         for agent in rescue_team_Hist:
             eval_old_sensations = net.wall_sensor(old_wall_sensations, old_raw_sensations, victims_wall_sensations,
-                                                  rescue_team_Hist.index(agent), eval_old_sensations)
+                                                  rescue_team_Hist.index(agent), eval_old_sensations, rescue_team_VFD_list)
             # Calculation of the sensations for the rescue team
             # agent.old_Sensation = agent.update_sensation(rescue_team_Hist.index(agent),
             #                                              old_raw_sensations, eval_old_sensations)
@@ -273,7 +273,7 @@ def env(accuracy=1e-15):
         for agent in rescue_team_Hist:
             eval_curr_sensations = net.wall_sensor(curr_wall_sensations, curr_raw_sensations,
                                                    victims_wall_sensations, rescue_team_Hist.index(agent),
-                                                   eval_curr_sensations)
+                                                   eval_curr_sensations, rescue_team_VFD_list)
             # agent.curr_Sensation = agent.update_sensation(rescue_team_Hist.index(agent),
             #                                               curr_raw_sensations, eval_curr_sensations)
             agent.curr_Sensation = agent.update_sensation2(rescue_team_Hist.index(agent),
@@ -401,10 +401,10 @@ if Multi_Runs:
         rescue_team_RewSum_seen_Run.append(list(filter(None, rescue_team_RewSum_seen)))
         rescue_team_Steps_seen_Run.append(list(filter(None, rescue_team_Steps_seen)))
 
-    rescue_team_RewSum_Run = np.mean(np.asarray(rescue_team_RewSum_Run), axis=0)
-    rescue_team_Steps_Run = np.mean(np.asarray(rescue_team_Steps_Run), axis=0)
-    rescue_team_RewSum_seen_Run = np.mean(np.asarray(rescue_team_RewSum_seen_Run), axis=0)
-    rescue_team_Steps_seen_Run = np.mean(np.asarray(rescue_team_Steps_seen_Run), axis=0)
+    rescue_team_RewSum_Run = np.asarray(rescue_team_RewSum_Run)
+    rescue_team_Steps_Run = np.asarray(rescue_team_Steps_Run)
+    rescue_team_RewSum_seen_Run = np.asarray(rescue_team_RewSum_seen_Run)
+    rescue_team_Steps_seen_Run = np.asarray(rescue_team_Steps_seen_Run)
 
     with h5py.File(f'multi_agent_Q_learning_{exp_name}_{str(NUM_RUNS)}Runs.hdf5', 'w') as f:
         for idx, rew_sum in enumerate(rescue_team_RewSum_Run):
